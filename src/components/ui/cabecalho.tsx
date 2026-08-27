@@ -10,10 +10,10 @@ export function Cabecalho({ titulo, subtitulo }: { titulo: string; subtitulo?: s
   const router = useRouter();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { borderBottomColor: theme.border }]}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Voltar"
+        accessibilityLabel="Voltar para a tela anterior"
         onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
         hitSlop={8}
         style={({ pressed }) => [
@@ -21,8 +21,8 @@ export function Cabecalho({ titulo, subtitulo }: { titulo: string; subtitulo?: s
           { borderColor: theme.border, backgroundColor: theme.backgroundElement },
           pressed && styles.pressed,
         ]}>
-        <ThemedText type="default" themeColor="accent">
-          ←
+        <ThemedText type="smallBold" themeColor="accent">
+          ← Voltar
         </ThemedText>
       </Pressable>
 
@@ -36,6 +36,9 @@ export function Cabecalho({ titulo, subtitulo }: { titulo: string; subtitulo?: s
           {titulo}
         </ThemedText>
       </View>
+      <View style={styles.marca}>
+        <ThemedText type="smallBold" themeColor="accent">musica</ThemedText>
+      </View>
     </View>
   );
 }
@@ -45,16 +48,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.three,
+    paddingBottom: Spacing.three,
+    borderBottomWidth: 1,
   },
   voltar: {
-    width: MinTouchTarget,
-    height: MinTouchTarget,
+    minWidth: 92,
+    minHeight: MinTouchTarget,
+    paddingHorizontal: Spacing.two,
     borderRadius: Spacing.three,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  textos: { flex: 1, gap: Spacing.half },
+  textos: { flex: 1, flexShrink: 1, gap: Spacing.half },
+  marca: { flexShrink: 0, marginLeft: Spacing.one },
   titulo: { fontWeight: '600' },
   pressed: { opacity: 0.7 },
 });

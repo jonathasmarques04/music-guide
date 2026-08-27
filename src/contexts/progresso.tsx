@@ -12,6 +12,8 @@ type ProgressoValue = {
   statusDe: (moduloId: string) => StatusModulo;
   notaDe: (moduloId: string) => number | undefined;
   concluidos: number;
+  totalAulas: number;
+  progressoDe: (moduloId: string) => number;
   reiniciar: () => void;
 };
 
@@ -51,6 +53,8 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
     statusDe,
     notaDe: (moduloId) => notas[moduloId],
     concluidos: MODULOS.filter((m) => passou(m.id)).length,
+    totalAulas: MODULOS.length,
+    progressoDe: (moduloId) => (passou(moduloId) ? 1 : notas[moduloId] ?? 0),
     reiniciar: () => setNotas({}),
   };
 
