@@ -1,100 +1,173 @@
 /**
- * Tema do app: totalmente escuro (fundo preto, texto branco, detalhes em roxo).
+ * Tema do app — sistema **Modernist**.
  *
- * O app não oferece modo claro. Para garantir isso em todas as plataformas —
- * inclusive na web, onde o sistema do usuário poderia forçar o esquema claro —
- * `light` e `dark` apontam para a MESMA paleta. Assim nenhum caminho de código
- * consegue "vazar" um tema claro.
+ * Plano, arquitetônico e inteiro em Archivo: fundo claro, tinta quase preta,
+ * um único vermelhão de destaque, grade visível, réguas fortes de 2px e
+ * **raio zero em tudo**. Nada flutua e nada é decorado — o alinhamento e a
+ * força dos divisores fazem toda a organização.
  *
- * Contraste verificado sobre o fundo preto (#000000), alvo WCAG 2.1 AA:
- *   text          #FFFFFF  21.0:1  (AAA)
- *   textSecondary #B0AABF   9.4:1  (AAA)
- *   textMuted     #7E7690   4.9:1  (AA — use só em texto de apoio)
- *   accent        #A78BFA   7.7:1  (AAA — roxo para texto e ícones)
- *   accentStrong  #7C3AED   3.7:1  (AA para componentes de UI; NÃO use como texto
- *                                   sobre preto — use como preenchimento com
- *                                   accentOn por cima, que dá 5.7:1)
- *   success       #4ADE80  11.9:1  (AAA)
- *   error         #F87171   7.6:1  (AAA)
+ * O app segue o esquema do sistema (`userInterfaceStyle: "automatic"`):
+ * `light` é a paleta do design; `dark` é a mesma linguagem com o chão
+ * invertido — mesma tinta, mesmo vermelhão, mesmos papéis.
  *
- * Verde e vermelho NUNCA aparecem sozinhos: acerto e erro sempre carregam
- * também um símbolo (✓ / ✕) e um rótulo em texto, porque cor sozinha exclui
- * quem tem daltonismo — e vermelho/verde é justamente o par pior.
+ * ## Os três níveis do destaque
+ *
+ * O vermelhão #ec3013 sobre o fundo claro dá apenas **3,76:1**. Isso basta
+ * para ícone, chrome e texto grande — **não** para texto de corpo nem para o
+ * rótulo de um botão de 15px. Por isso o destaque se divide em três papéis
+ * com contratos de contraste diferentes, e cada um só pode ser usado no seu:
+ *
+ * | token           | claro     | para que serve                                  |
+ * |-----------------|-----------|-------------------------------------------------|
+ * | `accent`        | `#ae1800` | TEXTO e ícone em destaque sobre o fundo (6,4:1) |
+ * | `accentStrong`  | `#c62410` | PREENCHIMENTO de controle com rótulo pequeno    |
+ * |                 |           | (botão, tag, aba ativa) — rótulo dá 5,1:1       |
+ * | `accentDisplay` | `#ec3013` | o vermelhão de pôster: blocos de tipografia     |
+ * |                 |           | grande e réguas de destaque. NUNCA com rótulo   |
+ * |                 |           | pequeno por cima, e nunca como preenchimento    |
+ * |                 |           | que precise se destacar de um trilho.           |
+ *
+ * ## Certo e errado sem verde e vermelho
+ *
+ * O sistema é monocromático: não existe verde. Acerto e erro se distinguem
+ * por **croma contra neutro** (destaque vs. tinta), não por matiz — o que é
+ * mais seguro para daltonismo do que o par verde/vermelho. Ainda assim, cor
+ * nunca vem sozinha: todo estado carrega também símbolo (✓ / ✕) e rótulo em
+ * texto.
+ *
+ * Contrastes verificados nos DOIS temas contra WCAG 2.1 AA (4,5:1 para texto
+ * normal, 3:1 para texto grande e componentes de interface).
  */
 
 import '@/global.css';
 
 import { Platform } from 'react-native';
 
-const palette = {
-  /** Fundo principal — preto puro, conforme o design do app. */
-  background: '#000000',
-  /** Superfície elevada (cards, campos de formulário). Preto com leve tom roxo. */
-  backgroundElement: '#121016',
-  /** Estado selecionado / ativo. */
-  backgroundSelected: '#1E1826',
+/**
+ * Chão claro — a paleta do design.
+ *
+ * As cinzas derivadas (`textSecondary`, `border`, `divider`, `hairline`) são
+ * a tinta #201e1d achatada sobre o fundo em 72%, 52%, 40% e 18%. Ficam aqui
+ * já resolvidas, e não como translucidez, porque React Native não compõe cor
+ * com alfa contra o que estiver atrás — o mesmo `rgba` sobre uma superfície
+ * diferente muda de contraste sem avisar.
+ */
+const claro = {
+  /** Chão do app — o "bone" do sistema. */
+  background: '#f3f2f2',
+  /** Superfície preenchida: campo de formulário, bloco de nota, célula de tabela. */
+  backgroundElement: '#eae9e9',
+  /** Estado pressionado / linha selecionada. */
+  backgroundSelected: '#dedcdc',
 
-  /** Texto principal. */
-  text: '#FFFFFF',
-  /** Texto de apoio (descrições, legendas). */
-  textSecondary: '#B0AABF',
-  /** Texto terciário (placeholders). Não use para informação essencial. */
-  textMuted: '#7E7690',
+  /** Tinta. Texto principal e as réguas mais fortes. */
+  text: '#201e1d',
+  /** Texto de apoio: descrições, legendas, corpo secundário. */
+  textSecondary: '#5b5959',
+  /** Texto terciário: rótulos versaletes, metadados. Nunca informação essencial. */
+  textMuted: '#6b6969',
 
-  /** Roxo para TEXTO e ÍCONES sobre o fundo escuro. */
-  accent: '#A78BFA',
-  /** Roxo de PREENCHIMENTO (botão primário, barra de progresso). */
-  accentStrong: '#7C3AED',
-  /** Cor do conteúdo por cima de `accentStrong`. */
-  accentOn: '#FFFFFF',
-  /** Superfície roxa discreta (badges, destaques sutis). */
-  accentSurface: '#1A1024',
+  /** Destaque para TEXTO e ícone (ver tabela acima). */
+  accent: '#ae1800',
+  /** Destaque de PREENCHIMENTO de controle com rótulo pequeno. */
+  accentStrong: '#c62410',
+  /** Vermelhão de pôster: só tipografia grande e réguas de destaque. */
+  accentDisplay: '#ec3013',
+  /** Conteúdo por cima de `accentStrong` e `accentDisplay`. */
+  accentOn: '#f3f2f2',
+  /** Superfície tingida de destaque (tag, aviso). Use `accent` como texto nela. */
+  accentSurface: '#fff2ef',
 
-  /** Verde de acerto — texto, ícone e borda. */
-  success: '#4ADE80',
-  /** Superfície verde discreta, para o fundo do feedback de acerto. */
-  successSurface: '#0B1F14',
-  /** Vermelho de erro — texto, ícone e borda. */
-  error: '#F87171',
-  /** Superfície vermelha discreta, para o fundo do feedback de erro. */
-  errorSurface: '#241315',
+  /** Acerto — o destaque. Sempre acompanhado de ✓ e de rótulo em texto. */
+  success: '#ae1800',
+  successSurface: '#fff2ef',
+  /** Erro — a tinta neutra, com régua de destaque à esquerda. Sempre com ✕. */
+  error: '#201e1d',
+  errorSurface: '#eae9e9',
 
-  /** Borda decorativa. Baixo contraste por design — nunca use sozinha para
-   *  comunicar estado; para foco/seleção use `accent`. */
-  border: '#2A2233',
+  /** Contorno de controle (campo, botão secundário). Cumpre 3:1. */
+  border: '#7d7b7b',
+  /** Régua estrutural de 2px entre seções. Decorativa. */
+  divider: '#9f9d9d',
+  /** Fio de 1px entre linhas de uma lista. Decorativo. */
+  hairline: '#cdcccc',
+
+  /** Bloco invertido — o mais alto do sistema (placar, fórmula, cabeçalho de grade). */
+  inverse: '#201e1d',
+  /** Texto sobre `inverse`. */
+  inverseOn: '#f3f2f2',
+  /** Texto de apoio sobre `inverse` (o kicker dentro do bloco). */
+  inverseMuted: '#b8b7b6',
+} as const;
+
+/**
+ * Chão escuro — a mesma linguagem com o fundo invertido.
+ *
+ * O destaque sobe na rampa (o #ec3013 fica escuro demais para servir de texto
+ * sobre a tinta): `accent` vira o passo 400 e `accentStrong` o 500, que aceita
+ * a tinta como rótulo. `accentDisplay` continua o mesmo vermelhão — ele é o
+ * pôster, e um pôster não muda de cor com a luz da sala.
+ */
+const escuro = {
+  background: '#201e1d',
+  backgroundElement: '#2d2b2b',
+  backgroundSelected: '#444141',
+
+  text: '#f3f2f2',
+  textSecondary: '#b8b7b6',
+  textMuted: '#949392',
+
+  accent: '#ff9783',
+  accentStrong: '#ff563c',
+  accentDisplay: '#ec3013',
+  /** No escuro o rótulo por cima do preenchimento é a TINTA, não o bone. */
+  accentOn: '#201e1d',
+  accentSurface: '#4d170e',
+
+  success: '#ff9783',
+  successSurface: '#4d170e',
+  error: '#f3f2f2',
+  errorSurface: '#2d2b2b',
+
+  border: '#7d7979',
+  divider: '#747372',
+  hairline: '#464443',
+
+  inverse: '#f3f2f2',
+  inverseOn: '#201e1d',
+  inverseMuted: '#5b5959',
 } as const;
 
 export const Colors = {
-  light: palette,
-  dark: palette,
+  light: claro,
+  dark: escuro,
 } as const;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
-  },
-});
+/**
+ * Archivo em três pesos — 400 corpo, 600 rótulo, 800 título.
+ *
+ * No nativo `fontWeight` não escolhe entre famílias carregadas separadamente:
+ * cada peso é uma família própria e precisa ir em `fontFamily`. Quem resolve
+ * essa escolha é `ThemedText`; nenhum outro componente deve montar isso na mão.
+ *
+ * As fontes são carregadas em `app/_layout.tsx`. Antes disso o texto sai na
+ * fonte do sistema — por isso `fontWeight` continua acompanhando cada estilo,
+ * como reserva para o primeiro quadro e para a web antes da hidratação.
+ */
+export const Fonts = {
+  regular: 'Archivo_400Regular',
+  semibold: 'Archivo_600SemiBold',
+  extrabold: 'Archivo_800ExtraBold',
+  mono:
+    Platform.select({
+      ios: 'ui-monospace',
+      android: 'monospace',
+      web: 'var(--font-mono)',
+      default: 'monospace',
+    }) ?? 'monospace',
+} as const;
 
 export const Spacing = {
   half: 2,
@@ -106,14 +179,32 @@ export const Spacing = {
   six: 64,
 } as const;
 
+/**
+ * Raio zero em tudo — é a regra número um do sistema. Existe como token, e não
+ * como `0` solto, para que trocar de sistema de design seja um lugar só.
+ */
+export const Radius = 0;
+
+/**
+ * As duas espessuras de régua do Modernist. A grossa separa seções; o fio
+ * separa linhas de uma mesma lista. O sistema não admite uma terceira.
+ */
+export const Rules = {
+  /** Régua estrutural entre seções. Cor: `divider`. */
+  thick: 2,
+  /** Fio entre itens de lista. Cor: `hairline`. */
+  hair: 1,
+} as const;
+
 /** Altura mínima de alvo de toque (WCAG 2.5.5 / iOS HIG). */
 export const MinTouchTarget = 44;
 
 /**
- * Espaço que a navegação inferior ocupa e o conteúdo precisa reservar no fim
- * das rolagens. Na web a barra é uma ilha flutuante (`app-tabs.web.tsx`):
- * 62px de altura mais os 24px que ela sobe do rodapé. Sem reservar isso, o
- * último item da lista fica atrás dela.
+ * Largura máxima da coluna de leitura. No celular a tela é mais estreita que
+ * isso; no tablet e na web é ela que impede a linha de texto de esticar.
+ *
+ * Não existe um `BottomTabInset`: a barra de abas do Modernist é uma faixa
+ * chapada **no fluxo** (`app-tabs.tsx`), não uma ilha flutuante, então o
+ * conteúdo não precisa reservar espaço no fim da rolagem.
  */
-export const BottomTabInset = Platform.select({ ios: 50, android: 80, web: 88 }) ?? 0;
 export const MaxContentWidth = 800;

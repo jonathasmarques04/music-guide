@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 
-import { Aviso, Campo } from '@/components/login-screen';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/button';
+import { Campo } from '@/components/ui/campo';
+import { Nota } from '@/components/ui/nota';
+import { Regua } from '@/components/ui/regua';
+import { Tela } from '@/components/ui/tela';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth';
 import { useTheme } from '@/hooks/use-theme';
@@ -22,7 +23,6 @@ const MINIMO_SENHA = 6;
  * então a tela existe para não deixá-lo entrar no app sem trocar a senha.
  */
 export function RedefinirSenhaScreen() {
-  const theme = useTheme();
   const { session, definirNovaSenha, signOut } = useAuth();
 
   const [senha, setSenha] = useState('');
@@ -47,114 +47,112 @@ export function RedefinirSenhaScreen() {
   };
 
   return (
-    <ThemedView style={styles.root}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <SafeAreaView style={styles.flex}>
-          <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-            <View style={styles.content}>
-              <View style={styles.header}>
-                <ThemedView type="accentSurface" style={styles.mark}>
-                  <ThemedText style={[styles.markGlyph, { color: theme.accent }]}>♪</ThemedText>
-                </ThemedView>
+    <KeyboardAvoidingView
+      style={styles.raiz}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <Tela espaco={Spacing.two + Spacing.one}>
+        <View style={styles.titulo}>
+          <ThemedText type="kicker">Recuperação</ThemedText>
+          <ThemedText type="title" accessibilityRole="header">
+            Nova senha
+          </ThemedText>
+        </View>
 
-                <ThemedText type="subtitle" accessibilityRole="header" style={styles.centered}>
-                  Nova senha
-                </ThemedText>
-                <ThemedText type="default" themeColor="textSecondary" style={styles.centered}>
-                  {session?.email
-                    ? `Defina a nova senha da conta ${session.email}.`
-                    : 'Defina a nova senha da sua conta.'}
-                </ThemedText>
-              </View>
+        <Regua />
 
-              <View style={styles.form}>
-                <Campo
-                  label="Nova senha"
-                  value={senha}
-                  onChangeText={setSenha}
-                  placeholder={`Pelo menos ${MINIMO_SENHA} caracteres`}
-                  ajuda={curta ? `Faltam ${MINIMO_SENHA - senha.length} caractere(s).` : undefined}
-                  secureTextEntry
-                  autoComplete="new-password"
-                  autoCapitalize="none"
-                  textContentType="newPassword"
-                />
+        <ThemedText type="default" themeColor="textSecondary">
+          {session?.email
+            ? `Escolha uma senha nova para ${session.email}.`
+            : 'Escolha uma senha nova para a sua conta.'}
+        </ThemedText>
 
-                <Campo
-                  label="Repita a nova senha"
-                  value={confirmacao}
-                  onChangeText={setConfirmacao}
-                  placeholder="A mesma senha de novo"
-                  ajuda={diferem ? 'As duas senhas precisam ser iguais.' : undefined}
-                  secureTextEntry
-                  autoComplete="new-password"
-                  autoCapitalize="none"
-                  textContentType="newPassword"
-                  onSubmitEditing={() => podeEnviar && !enviando && enviar()}
-                />
+        <Campo
+          label="Nova senha"
+          value={senha}
+          onChangeText={setSenha}
+          placeholder={`Pelo menos ${MINIMO_SENHA} caracteres`}
+          invalido={curta}
+          ajuda={curta ? `Faltam ${MINIMO_SENHA - senha.length} caractere(s).` : undefined}
+          secureTextEntry
+          autoComplete="new-password"
+          autoCapitalize="none"
+          textContentType="newPassword"
+        />
 
-                {erro && <Aviso tipo="erro" texto={erro} />}
+        <Campo
+          label="Repita a nova senha"
+          value={confirmacao}
+          onChangeText={setConfirmacao}
+          placeholder="A mesma senha de novo"
+          invalido={diferem}
+          ajuda={diferem ? 'As duas senhas precisam ser iguais.' : undefined}
+          secureTextEntry
+          autoComplete="new-password"
+          autoCapitalize="none"
+          textContentType="newPassword"
+          onSubmitEditing={() => podeEnviar && !enviando && enviar()}
+        />
 
-                <Button
-                  disabled={!podeEnviar}
-                  loading={enviando}
-                  onPress={enviar}
-                  accessibilityHint="Salva a nova senha e abre o app">
-                  Salvar nova senha
-                </Button>
+        <Requisitos senha={senha} confirmacao={confirmacao} />
 
-                <Button
-                  variant="ghost"
-                  disabled={enviando}
-                  onPress={signOut}
-                  accessibilityHint="Descarta a recuperação e volta para a tela de login">
-                  Cancelar
-                </Button>
-              </View>
-            </View>
-          </ScrollView>
-        </SafeAreaView>
-      </KeyboardAvoidingView>
-    </ThemedView>
+        {erro && <Nota tom="erro" rotulo="Não deu para trocar" texto={erro} />}
+
+        <View style={styles.acoes}>
+          <Button
+            bloco
+            size="lg"
+            disabled={!podeEnviar}
+            loading={enviando}
+            onPress={enviar}
+            accessibilityHint="Salva a nova senha e abre o app">
+            Salvar e entrar
+          </Button>
+
+          <Button
+            bloco
+            variant="ghost"
+            disabled={enviando}
+            onPress={signOut}
+            accessibilityHint="Descarta a recuperação e volta para a tela de entrada">
+            Cancelar
+          </Button>
+        </View>
+      </Tela>
+    </KeyboardAvoidingView>
+  );
+}
+
+/** Cada exigência com o próprio ✓ ou —, para o aluno ver o que ainda falta. */
+function Requisitos({ senha, confirmacao }: { senha: string; confirmacao: string }) {
+  const theme = useTheme();
+
+  const itens = [
+    { rotulo: `Pelo menos ${MINIMO_SENHA} caracteres`, ok: senha.length >= MINIMO_SENHA },
+    { rotulo: 'Uma letra e um número', ok: /[a-zA-Z]/.test(senha) && /\d/.test(senha) },
+    { rotulo: 'As duas senhas coincidem', ok: senha.length > 0 && senha === confirmacao },
+  ];
+
+  return (
+    <View style={[styles.requisitos, { backgroundColor: theme.backgroundElement }]}>
+      <ThemedText type="label">Requisitos</ThemedText>
+      {itens.map((item) => (
+        <ThemedText
+          key={item.rotulo}
+          type="small"
+          themeColor={item.ok ? 'accent' : 'textMuted'}>
+          {item.ok ? '✓' : '—'} {item.rotulo}
+        </ThemedText>
+      ))}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
-  flex: { flex: 1 },
-  scroll: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: Spacing.four,
+  raiz: { flex: 1 },
+  titulo: { gap: Spacing.one + Spacing.half },
+  requisitos: {
+    padding: Spacing.two + Spacing.one,
+    gap: Spacing.one,
   },
-  content: {
-    width: '100%',
-    maxWidth: 420,
-    gap: Spacing.five,
-  },
-  header: {
-    alignItems: 'center',
-    gap: Spacing.two,
-  },
-  mark: {
-    width: 64,
-    height: 64,
-    borderRadius: Spacing.four,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.two,
-  },
-  markGlyph: {
-    fontSize: 34,
-    lineHeight: 42,
-  },
-  centered: {
-    textAlign: 'center',
-  },
-  form: {
-    gap: Spacing.three,
-  },
+  acoes: { marginTop: 'auto', paddingTop: Spacing.three, gap: Spacing.two },
 });

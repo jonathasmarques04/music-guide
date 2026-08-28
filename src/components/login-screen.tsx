@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/button';
-import { MaxContentWidth, MinTouchTarget, Spacing } from '@/constants/theme';
+import { Campo } from '@/components/ui/campo';
+import { Nota } from '@/components/ui/nota';
+import { Regua } from '@/components/ui/regua';
+import { Tela } from '@/components/ui/tela';
+import { MODULOS } from '@/content/modulos';
+import { Radius, Rules, Spacing } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -18,32 +21,39 @@ const MINIMO_SENHA = 6;
  */
 const SEGUNDOS_ENTRE_REENVIOS = 60;
 
-type Modo = 'entrar' | 'cadastrar' | 'recuperar';
+type Modo = 'boasVindas' | 'entrar' | 'cadastrar' | 'recuperar';
 
-const TEXTOS: Record<Modo, { acao: string; chamada: string; dica: string }> = {
+const TEXTOS: Record<Exclude<Modo, 'boasVindas'>, { kicker: string; titulo: string; acao: string; dica: string }> = {
   entrar: {
+    kicker: 'Área do aluno',
+    titulo: 'Entrar',
     acao: 'Entrar',
-    chamada: 'Teoria musical, do primeiro intervalo ao campo harmônico.',
     dica: 'Entra na sua conta e abre a trilha de onde você parou',
   },
   cadastrar: {
+    kicker: 'Nova conta',
+    titulo: 'Criar conta',
     acao: 'Criar conta',
-    chamada: 'Crie sua conta para salvar seu progresso na trilha.',
     dica: 'Cria sua conta e começa a trilha pelos fundamentos',
   },
   recuperar: {
+    kicker: 'Recuperação',
+    titulo: 'Esqueci a senha',
     acao: 'Enviar link de recuperação',
-    chamada: 'Informe seu e-mail e enviamos um link para você definir uma nova senha.',
     dica: 'Envia para o seu e-mail um link de redefinição de senha',
   },
 };
 
+/** Os três módulos que resumem a trilha, para a tela de boas-vindas. */
+const VITRINE = [1, 5, 12]
+  .map((numero) => MODULOS.find((modulo) => modulo.numero === numero))
+  .filter((modulo): modulo is (typeof MODULOS)[number] => !!modulo);
+
 export function LoginScreen() {
-  const theme = useTheme();
   const { signIn, signUp, recuperarSenha, reenviarConfirmacao, signInAsGuest, erroLink, limparErroLink } =
     useAuth();
 
-  const [modo, setModo] = useState<Modo>('entrar');
+  const [modo, setModo] = useState<Modo>('boasVindas');
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -66,13 +76,6 @@ export function LoginScreen() {
   const senhaValida = senha.length >= MINIMO_SENHA;
   const nomeValido = nome.trim().length >= 2;
 
-  const podeEnviar =
-    modo === 'recuperar'
-      ? emailValido
-      : modo === 'entrar'
-        ? emailValido && senha.length > 0
-        : nomeValido && emailValido && senhaValida;
-
   /** Trocar de modo zera o que era resposta da tentativa anterior. */
   const irPara = (proximo: Modo) => {
     setModo(proximo);
@@ -83,6 +86,17 @@ export function LoginScreen() {
     if (proximo !== 'cadastrar') setNome('');
     if (proximo === 'recuperar') setSenha('');
   };
+
+  if (modo === 'boasVindas') {
+    return <BoasVindas onEntrar={() => irPara('entrar')} onCadastrar={() => irPara('cadastrar')} onVisitante={signInAsGuest} />;
+  }
+
+  const podeEnviar =
+    modo === 'recuperar'
+      ? emailValido
+      : modo === 'entrar'
+        ? emailValido && senha.length > 0
+        : nomeValido && emailValido && senhaValida;
 
   const enviar = async () => {
     setEnviando(true);
@@ -143,331 +157,276 @@ export function LoginScreen() {
     setEnviando(false);
   };
 
+  const textos = TEXTOS[modo];
+
   return (
-    <ThemedView style={styles.root}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <SafeAreaView style={styles.flex}>
-          <ScrollView
-            contentContainerStyle={styles.scroll}
-            keyboardShouldPersistTaps="handled">
-            <View style={styles.content}>
-              <View style={styles.header}>
-                <ThemedView type="accentSurface" style={styles.mark}>
-                  <ThemedText style={[styles.markGlyph, { color: theme.accent }]}>
-                    ♪
-                  </ThemedText>
-                </ThemedView>
+    <KeyboardAvoidingView
+      style={styles.raiz}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <Tela espaco={Spacing.two + Spacing.one}>
+        <Button variant="ghost" size="sm" onPress={() => irPara('boasVindas')}>
+          ← Início
+        </Button>
 
-                <ThemedText
-                  type="subtitle"
-                  accessibilityRole="header"
-                  style={styles.centered}>
-                  musica
-                </ThemedText>
-                <ThemedText
-                  type="default"
-                  themeColor="textSecondary"
-                  style={styles.centered}>
-                  {TEXTOS[modo].chamada}
-                </ThemedText>
-              </View>
+        <View style={styles.titulo}>
+          <ThemedText type="kicker">{textos.kicker}</ThemedText>
+          <ThemedText type="title" accessibilityRole="header">
+            {textos.titulo}
+          </ThemedText>
+        </View>
 
-              <View style={styles.form}>
-                {modo === 'cadastrar' && (
-                  <Campo
-                    label="Nome"
-                    value={nome}
-                    onChangeText={setNome}
-                    placeholder="Como você quer ser chamado"
-                    autoComplete="name"
-                    autoCapitalize="words"
-                    textContentType="name"
-                  />
-                )}
+        <Regua />
 
-                <Campo
-                  label="E-mail"
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="voce@exemplo.com"
-                  keyboardType="email-address"
-                  autoComplete="email"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  textContentType="emailAddress"
-                />
+        {modo === 'recuperar' && (
+          <ThemedText type="default" themeColor="textSecondary">
+            Informe seu e-mail e enviamos um link para você definir uma nova senha.
+          </ThemedText>
+        )}
 
-                {modo !== 'recuperar' && (
-                  <Campo
-                    label="Senha"
-                    value={senha}
-                    onChangeText={setSenha}
-                    placeholder={modo === 'cadastrar' ? `Pelo menos ${MINIMO_SENHA} caracteres` : 'Sua senha'}
-                    ajuda={
-                      modo === 'cadastrar'
-                        ? `Use ${MINIMO_SENHA} caracteres ou mais.`
-                        : undefined
-                    }
-                    secureTextEntry
-                    autoComplete={modo === 'cadastrar' ? 'new-password' : 'current-password'}
-                    autoCapitalize="none"
-                    textContentType={modo === 'cadastrar' ? 'newPassword' : 'password'}
-                    onSubmitEditing={() => podeEnviar && !enviando && enviar()}
-                  />
-                )}
+        {modo === 'cadastrar' && (
+          <Campo
+            label="Nome"
+            value={nome}
+            onChangeText={setNome}
+            placeholder="Como você quer ser chamado"
+            autoComplete="name"
+            autoCapitalize="words"
+            textContentType="name"
+          />
+        )}
 
-                {erroLink && <Aviso tipo="erro" texto={erroLink} />}
-                {erro && <Aviso tipo="erro" texto={erro} />}
-                {aviso && <Aviso tipo="info" texto={aviso} />}
+        <Campo
+          label="E-mail"
+          value={email}
+          onChangeText={setEmail}
+          placeholder="voce@exemplo.com"
+          keyboardType="email-address"
+          autoComplete="email"
+          autoCapitalize="none"
+          autoCorrect={false}
+          textContentType="emailAddress"
+        />
 
-                <Button
-                  disabled={!podeEnviar}
-                  loading={enviando}
-                  onPress={enviar}
-                  accessibilityHint={TEXTOS[modo].dica}>
-                  {TEXTOS[modo].acao}
-                </Button>
+        {modo !== 'recuperar' && (
+          <View style={styles.senha}>
+            <Campo
+              label="Senha"
+              value={senha}
+              onChangeText={setSenha}
+              placeholder={modo === 'cadastrar' ? `Pelo menos ${MINIMO_SENHA} caracteres` : 'Sua senha'}
+              secureTextEntry
+              autoComplete={modo === 'cadastrar' ? 'new-password' : 'current-password'}
+              autoCapitalize="none"
+              textContentType={modo === 'cadastrar' ? 'newPassword' : 'password'}
+              onSubmitEditing={() => podeEnviar && !enviando && enviar()}
+            />
+            {modo === 'cadastrar' && senha.length > 0 && <ForcaDaSenha senha={senha} />}
+          </View>
+        )}
 
-                {emailPendente && (
-                  <Button
-                    variant="ghost"
-                    disabled={enviando || esperaReenvio > 0}
-                    onPress={reenviar}
-                    accessibilityHint={`Envia de novo o e-mail de confirmação para ${emailPendente}`}>
-                    {esperaReenvio > 0
-                      ? `Reenviar em ${esperaReenvio}s`
-                      : 'Não recebi o e-mail — reenviar'}
-                  </Button>
-                )}
+        {erroLink && <Nota tom="erro" rotulo="Link recusado" texto={erroLink} />}
+        {erro && <Nota tom="erro" rotulo="Erro" texto={erro} />}
+        {aviso && <Nota rotulo="✓ Tudo certo" texto={aviso} />}
 
-                {modo === 'entrar' && (
-                  <Link
-                    texto="Esqueci minha senha"
-                    hint="Abre o formulário para receber um link de redefinição de senha"
-                    onPress={() => irPara('recuperar')}
-                  />
-                )}
-              </View>
+        <Button
+          bloco
+          size="lg"
+          disabled={!podeEnviar}
+          loading={enviando}
+          onPress={enviar}
+          accessibilityHint={textos.dica}>
+          {textos.acao}
+        </Button>
 
-              <View style={styles.divisor}>
-                <View style={[styles.linha, { backgroundColor: theme.border }]} />
-                <ThemedText type="small" themeColor="textMuted">
-                  ou
-                </ThemedText>
-                <View style={[styles.linha, { backgroundColor: theme.border }]} />
-              </View>
+        {emailPendente && (
+          <Button
+            bloco
+            variant="secondary"
+            disabled={enviando || esperaReenvio > 0}
+            onPress={reenviar}
+            accessibilityHint={`Envia de novo o e-mail de confirmação para ${emailPendente}`}>
+            {esperaReenvio > 0 ? `Reenviar em ${esperaReenvio}s` : 'Não recebi o e-mail — reenviar'}
+          </Button>
+        )}
 
-              <View style={styles.alternativas}>
-                {modo === 'entrar' ? (
-                  <Link
-                    texto="Ainda não tenho conta — criar agora"
-                    hint="Abre o formulário de cadastro"
-                    onPress={() => irPara('cadastrar')}
-                  />
-                ) : (
-                  <Link
-                    texto="Já tenho conta — entrar"
-                    hint="Volta para o formulário de login"
-                    onPress={() => irPara('entrar')}
-                  />
-                )}
-
-                {/*
-                  Bypass de desenvolvimento: entra sem credencial e sem conta no
-                  Supabase. Fica atrás de `__DEV__`, então some do build de
-                  produção — com autenticação real no lugar, deixar isso em
-                  produção seria uma porta aberta.
-                */}
-                {__DEV__ && (
-                  <View style={styles.bypass}>
-                    <Button
-                      variant="secondary"
-                      onPress={signInAsGuest}
-                      accessibilityHint="Pula o login e entra em modo visitante, sem conta">
-                      Entrar sem conta (bypass)
-                    </Button>
-                    <ThemedText
-                      type="small"
-                      themeColor="textMuted"
-                      style={styles.centered}>
-                      Atalho de desenvolvimento. Seu progresso não será salvo.
-                    </ThemedText>
-                  </View>
-                )}
-              </View>
-            </View>
-          </ScrollView>
-        </SafeAreaView>
-      </KeyboardAvoidingView>
-    </ThemedView>
+        <View style={styles.rodape}>
+          <Regua peso="hair" />
+          {modo === 'entrar' && (
+            <>
+              <Button variant="ghost" size="sm" onPress={() => irPara('recuperar')}>
+                Esqueci a senha
+              </Button>
+              <Button variant="ghost" size="sm" onPress={() => irPara('cadastrar')}>
+                Ainda não tenho conta — cadastrar
+              </Button>
+            </>
+          )}
+          {modo !== 'entrar' && (
+            <Button variant="ghost" size="sm" onPress={() => irPara('entrar')}>
+              Já tenho conta — entrar
+            </Button>
+          )}
+        </View>
+      </Tela>
+    </KeyboardAvoidingView>
   );
 }
 
 /**
- * Erro e informação nunca dependem só da cor (vermelho/verde exclui quem tem
- * daltonismo): cada aviso carrega também um símbolo e um rótulo em texto.
+ * A porta de entrada: o que a trilha é, três módulos de amostra e os três
+ * caminhos possíveis. Tudo rente à esquerda, como manda o sistema.
  */
-export function Aviso({ tipo, texto }: { tipo: 'erro' | 'info'; texto: string }) {
+function BoasVindas({
+  onEntrar,
+  onCadastrar,
+  onVisitante,
+}: {
+  onEntrar: () => void;
+  onCadastrar: () => void;
+  onVisitante: () => void;
+}) {
   const theme = useTheme();
-  const erro = tipo === 'erro';
+
+  return (
+    <Tela espaco={Spacing.three}>
+      <View style={styles.titulo}>
+        <ThemedText type="kicker">Music Guide</ThemedText>
+        <ThemedText type="display" accessibilityRole="header">
+          Teoria musical{'\n'}sem enrolação.
+        </ThemedText>
+      </View>
+
+      <ThemedText type="default" themeColor="textSecondary">
+        {MODULOS.length} módulos em ordem, do conceito de nota ao empréstimo modal. Cada um com
+        aula em passos, avaliação e baralho de revisão.
+      </ThemedText>
+
+      <View style={[styles.vitrine, { borderColor: theme.divider }]}>
+        {VITRINE.map((modulo, i) => (
+          <View
+            key={modulo.id}
+            style={[
+              styles.vitrineLinha,
+              i > 0 && { borderTopWidth: Rules.hair, borderTopColor: theme.hairline },
+            ]}>
+            <View style={[styles.vitrineNumero, { borderRightColor: theme.hairline }]}>
+              <ThemedText type="rowTitle" themeColor="accent" style={styles.vitrineNumeroTexto}>
+                {String(modulo.numero).padStart(2, '0')}
+              </ThemedText>
+            </View>
+            <View style={styles.vitrineTexto}>
+              <ThemedText type="rowTitle">{modulo.titulo}</ThemedText>
+              <ThemedText type="small" numberOfLines={2}>
+                {modulo.resumo}
+              </ThemedText>
+            </View>
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.acoes}>
+        <Button bloco size="lg" onPress={onCadastrar}>
+          Criar conta grátis
+        </Button>
+        <Button bloco size="lg" variant="secondary" onPress={onEntrar}>
+          Já tenho conta
+        </Button>
+
+        {/*
+          Bypass de desenvolvimento: entra sem credencial e sem conta no
+          Supabase. Fica atrás de `__DEV__`, então some do build de produção —
+          com autenticação real no lugar, deixar isso em produção seria uma
+          porta aberta.
+        */}
+        {__DEV__ && (
+          <>
+            <Button
+              variant="ghost"
+              onPress={onVisitante}
+              accessibilityHint="Pula o login e entra em modo visitante, sem conta">
+              Entrar como visitante
+            </Button>
+            <ThemedText type="small" themeColor="textMuted">
+              Atalho de desenvolvimento. Seu progresso não será salvo.
+            </ThemedText>
+          </>
+        )}
+      </View>
+    </Tela>
+  );
+}
+
+/**
+ * Medidor de força da senha.
+ *
+ * São quatro exigências independentes, e o medidor diz **quais** faltam — uma
+ * barra que só muda de cor não ensina ninguém a escolher uma senha melhor.
+ */
+function ForcaDaSenha({ senha }: { senha: string }) {
+  const theme = useTheme();
+
+  const criterios = [
+    { rotulo: `${MINIMO_SENHA} caracteres`, ok: senha.length >= MINIMO_SENHA },
+    { rotulo: '8 ou mais', ok: senha.length >= 8 },
+    { rotulo: 'um número', ok: /\d/.test(senha) },
+    { rotulo: 'um símbolo', ok: /[^\w\s]/.test(senha) },
+  ];
+
+  const atendidos = criterios.filter((criterio) => criterio.ok).length;
+  const faltando = criterios.filter((criterio) => !criterio.ok).map((criterio) => criterio.rotulo);
 
   return (
     <View
-      accessibilityRole="alert"
-      accessibilityLiveRegion="polite"
-      style={[
-        styles.aviso,
-        {
-          backgroundColor: erro ? theme.errorSurface : theme.accentSurface,
-          borderColor: erro ? theme.error : theme.accent,
-        },
-      ]}>
-      <ThemedText type="smallBold" themeColor={erro ? 'error' : 'accent'}>
-        {erro ? '✕' : '✓'}
+      style={styles.forca}
+      accessibilityRole="progressbar"
+      accessibilityLabel="Força da senha"
+      accessibilityValue={{ min: 0, max: criterios.length, now: atendidos }}>
+      <View style={styles.forcaBarras}>
+        {criterios.map((criterio, i) => (
+          <View
+            key={criterio.rotulo}
+            style={[
+              styles.forcaBarra,
+              { backgroundColor: i < atendidos ? theme.accentStrong : theme.backgroundSelected },
+            ]}
+          />
+        ))}
+      </View>
+      <ThemedText type="small" themeColor="textMuted">
+        {faltando.length === 0 ? '✓ Senha forte.' : `Falta: ${faltando.join(', ')}.`}
       </ThemedText>
-      <ThemedText type="small" style={styles.avisoTexto}>
-        <ThemedText type="smallBold" themeColor={erro ? 'error' : 'accent'}>
-          {erro ? 'Erro: ' : 'Tudo certo: '}
-        </ThemedText>
-        {texto}
-      </ThemedText>
-    </View>
-  );
-}
-
-function Link({ texto, hint, onPress }: { texto: string; hint: string; onPress: () => void }) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityHint={hint}
-      onPress={onPress}
-      hitSlop={8}
-      style={({ pressed }) => [styles.link, pressed && styles.pressed]}>
-      <ThemedText type="smallBold" themeColor="accent" style={styles.centered}>
-        {texto}
-      </ThemedText>
-    </Pressable>
-  );
-}
-
-type CampoProps = React.ComponentProps<typeof TextInput> & { label: string; ajuda?: string };
-
-export function Campo({ label, ajuda, ...rest }: CampoProps) {
-  const theme = useTheme();
-
-  return (
-    <View style={styles.campo}>
-      <ThemedText type="smallBold" themeColor="textSecondary">
-        {label}
-      </ThemedText>
-      <TextInput
-        accessibilityLabel={label}
-        accessibilityHint={ajuda}
-        placeholderTextColor={theme.textMuted}
-        style={[
-          styles.input,
-          {
-            backgroundColor: theme.backgroundElement,
-            borderColor: theme.border,
-            color: theme.text,
-          },
-        ]}
-        {...rest}
-      />
-      {ajuda && (
-        <ThemedText type="small" themeColor="textMuted">
-          {ajuda}
-        </ThemedText>
-      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
+  raiz: { flex: 1 },
+  titulo: { gap: Spacing.one + Spacing.half },
+  senha: { gap: Spacing.two },
+  forca: { gap: Spacing.one },
+  forcaBarras: { flexDirection: 'row', gap: Spacing.half },
+  forcaBarra: { flex: 1, height: Spacing.one - 1 },
+  vitrine: {
+    borderTopWidth: Rules.thick,
+    borderBottomWidth: Rules.thick,
+    borderLeftWidth: 0,
+    borderRightWidth: 0,
+    borderRadius: Radius,
   },
-  flex: {
-    flex: 1,
-  },
-  scroll: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: Spacing.four,
-  },
-  content: {
-    width: '100%',
-    maxWidth: 420,
-    gap: Spacing.five,
-  },
-  header: {
-    alignItems: 'center',
-    gap: Spacing.two,
-  },
-  mark: {
-    width: 64,
-    height: 64,
-    borderRadius: Spacing.four,
+  vitrineLinha: { flexDirection: 'row', alignItems: 'stretch' },
+  vitrineNumero: {
+    width: 52,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing.two,
+    borderRightWidth: Rules.hair,
   },
-  markGlyph: {
-    fontSize: 34,
-    lineHeight: 42,
-  },
-  centered: {
-    textAlign: 'center',
-  },
-  form: {
-    gap: Spacing.three,
-  },
-  campo: {
-    gap: Spacing.one,
-  },
-  input: {
-    minHeight: MinTouchTarget,
-    borderWidth: 1,
-    borderRadius: Spacing.three,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    fontSize: 16,
-  },
-  aviso: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: Spacing.two,
-    borderWidth: 1,
-    borderRadius: Spacing.three,
-    padding: Spacing.three,
-  },
-  avisoTexto: {
+  vitrineNumeroTexto: { fontSize: 15 },
+  vitrineTexto: {
     flex: 1,
+    gap: Spacing.half,
+    paddingVertical: Spacing.two + Spacing.half,
+    paddingHorizontal: Spacing.two + Spacing.one,
   },
-  link: {
-    minHeight: MinTouchTarget,
-    justifyContent: 'center',
-  },
-  pressed: {
-    opacity: 0.7,
-  },
-  divisor: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.three,
-  },
-  linha: {
-    flex: 1,
-    height: 1,
-  },
-  alternativas: {
-    gap: Spacing.three,
-  },
-  bypass: {
-    gap: Spacing.two,
-    maxWidth: MaxContentWidth,
-  },
+  acoes: { marginTop: 'auto', paddingTop: Spacing.three, gap: Spacing.two },
+  rodape: { marginTop: 'auto', paddingTop: Spacing.three, gap: Spacing.one },
 });

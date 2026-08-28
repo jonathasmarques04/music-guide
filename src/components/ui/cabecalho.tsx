@@ -1,67 +1,68 @@
 import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { MinTouchTarget, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { Button } from '@/components/ui/button';
+import { Regua } from '@/components/ui/regua';
+import { Spacing } from '@/constants/theme';
 
-export function Cabecalho({ titulo, subtitulo }: { titulo: string; subtitulo?: string }) {
-  const theme = useTheme();
+export type CabecalhoProps = {
+  titulo: string;
+  /** Versalete de destaque acima do título: "Módulo 05", "Checkout", "Ajuda". */
+  kicker?: string;
+  /** Nome da tela anterior — vira o rótulo do voltar ("← Trilha"). */
+  voltar?: string;
+  /** Régua de 2px fechando o cabeçalho. */
+  regua?: boolean;
+  /** Ação à direita do título (um botão de texto, normalmente). */
+  acao?: React.ReactNode;
+};
+
+/**
+ * O cabeçalho de tela: voltar rente à esquerda, versalete, título em 800 e a
+ * régua que separa o cabeçalho do conteúdo. Tudo alinhado no mesmo eixo — o
+ * sistema não centraliza nada.
+ */
+export function Cabecalho({ titulo, kicker, voltar, regua = true, acao }: CabecalhoProps) {
   const router = useRouter();
 
   return (
-    <View style={[styles.container, { borderBottomColor: theme.border }]}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Voltar para a tela anterior"
-        onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
-        hitSlop={8}
-        style={({ pressed }) => [
-          styles.voltar,
-          { borderColor: theme.border, backgroundColor: theme.backgroundElement },
-          pressed && styles.pressed,
-        ]}>
-        <ThemedText type="smallBold" themeColor="accent">
-          ← Voltar
-        </ThemedText>
-      </Pressable>
+    <View style={styles.bloco}>
+      {voltar && (
+        <Button
+          variant="ghost"
+          size="sm"
+          accessibilityHint={`Volta para ${voltar}`}
+          onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}>
+          {`← ${voltar}`}
+        </Button>
+      )}
 
-      <View style={styles.textos}>
-        {subtitulo && (
-          <ThemedText type="small" themeColor="accent">
-            {subtitulo}
+      <View style={styles.linha}>
+        <View style={styles.textos}>
+          {kicker && <ThemedText type="kicker">{kicker}</ThemedText>}
+          <ThemedText
+            type={titulo.length > 22 ? 'subtitle' : 'title'}
+            accessibilityRole="header">
+            {titulo}
           </ThemedText>
-        )}
-        <ThemedText type="default" accessibilityRole="header" style={styles.titulo}>
-          {titulo}
-        </ThemedText>
+        </View>
+        {acao}
       </View>
-      <View style={styles.marca}>
-        <ThemedText type="smallBold" themeColor="accent">musica</ThemedText>
-      </View>
+
+      {regua && <Regua style={styles.regua} />}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  bloco: { gap: Spacing.two },
+  linha: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: Spacing.three,
-    borderBottomWidth: 1,
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
   },
-  voltar: {
-    minWidth: 92,
-    minHeight: MinTouchTarget,
-    paddingHorizontal: Spacing.two,
-    borderRadius: Spacing.three,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  textos: { flex: 1, flexShrink: 1, gap: Spacing.half },
-  marca: { flexShrink: 0, marginLeft: Spacing.one },
-  titulo: { fontWeight: '600' },
-  pressed: { opacity: 0.7 },
+  textos: { flexShrink: 1, gap: Spacing.one + Spacing.half },
+  regua: { marginTop: Spacing.one },
 });

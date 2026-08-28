@@ -1,86 +1,120 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { BarraPassos } from '@/components/ui/barra';
 import { Button } from '@/components/ui/button';
 import { Cabecalho } from '@/components/ui/cabecalho';
-import { flashcardsPorModulo } from '@/content/flashcards';
+import { Nota } from '@/components/ui/nota';
+import { Tela } from '@/components/ui/tela';
 import { moduloPorId } from '@/content/modulos';
 import { quizPorModulo } from '@/content/quiz';
 import type { Bloco } from '@/content/tipos';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { Radius, Rules, Spacing } from '@/constants/theme';
 import { useProgresso } from '@/contexts/progresso';
 import { useTheme } from '@/hooks/use-theme';
 
+/**
+ * A aula em passos: uma seção por tela, com a barra de progresso no topo.
+ *
+ * Ler tudo de uma vez cansa e apaga a estrutura da apostila. Em passos, cada
+ * conceito ganha uma tela inteira e o aluno vê quanto falta.
+ */
 export default function LicaoScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, passo } = useLocalSearchParams<{ id: string; passo?: string }>();
   const router = useRouter();
-  const { statusDe, notaDe } = useProgresso();
+  const { statusDe } = useProgresso();
 
   const modulo = moduloPorId(id);
+  const inicial = Math.max(0, Number.parseInt(passo ?? '0', 10) || 0);
+  const [indice, setIndice] = useState(inicial);
 
-  if (!modulo) {
-    return <Aviso texto="Módulo não encontrado." />;
+  if (!modulo || modulo.secoes.length === 0) {
+    return (
+      <Tela>
+        <Cabecalho voltar="a trilha" titulo="Aula indisponível" />
+        <ThemedText type="small">Este módulo ainda não tem conteúdo publicado.</ThemedText>
+      </Tela>
+    );
   }
 
   if (statusDe(modulo.id) === 'bloqueado') {
-    return <Aviso texto="Este módulo ainda está bloqueado. Conclua a avaliação do módulo anterior." />;
+    return (
+      <Tela>
+        <Cabecalho voltar="a trilha" kicker="Bloqueado" titulo={modulo.titulo} />
+        <Nota
+          tom="aviso"
+          rotulo="Ainda trancado"
+          texto="Conclua a avaliação do módulo anterior para abrir esta aula."
+        />
+      </Tela>
+    );
   }
 
-  const nota = notaDe(modulo.id);
-  const totalCards = flashcardsPorModulo(modulo.id).length;
-  const totalQuestoes = quizPorModulo(modulo.id).length;
+  const atual = Math.min(indice, modulo.secoes.length - 1);
+  const secao = modulo.secoes[atual];
+  const ultima = atual === modulo.secoes.length - 1;
+  const temAvaliacao = quizPorModulo(modulo.id).length > 0;
+
+  const sair = () => router.push({ pathname: '/modulo/[id]', params: { id: modulo.id } });
+
+  const avancar = () => {
+    if (!ultima) {
+      setIndice(atual + 1);
+      return;
+    }
+
+    if (temAvaliacao) {
+      router.replace({ pathname: '/quiz/[id]', params: { id: modulo.id } });
+    } else {
+      sair();
+    }
+  };
 
   return (
-    <ThemedView style={styles.root}>
-      <SafeAreaView style={styles.flex}>
-        <ScrollView contentContainerStyle={styles.scroll}>
-          <View style={styles.content}>
-            <Cabecalho titulo={modulo.titulo} subtitulo={`MÓDULO ${modulo.numero}`} />
+    <View style={styles.raiz}>
+      <BarraPassos
+        atual={atual + 1}
+        total={modulo.secoes.length}
+        rotulo={`Progresso na aula de ${modulo.titulo}`}
+        rotuloSair="Sair da aula"
+        onSair={sair}
+      />
 
-            <ThemedText type="default" themeColor="textSecondary">
-              {modulo.resumo}
-            </ThemedText>
+      <Tela espaco={Spacing.two + Spacing.one}>
+        <ThemedText type="kicker">
+          Módulo {String(modulo.numero).padStart(2, '0')} · Passo {atual + 1}
+        </ThemedText>
+        <ThemedText type="heading" accessibilityRole="header">
+          {secao.titulo}
+        </ThemedText>
 
-            {modulo.secoes.map((secao) => (
-              <View key={secao.titulo} style={styles.secao}>
-                <ThemedText type="default" accessibilityRole="header" style={styles.secaoTitulo}>
-                  {secao.titulo}
-                </ThemedText>
-                {secao.blocos.map((bloco, indice) => (
-                  <BlocoConteudo key={indice} bloco={bloco} />
-                ))}
-              </View>
-            ))}
+        {secao.blocos.map((bloco, i) => (
+          <BlocoConteudo key={i} bloco={bloco} />
+        ))}
 
-            <View style={styles.acoes}>
-              {totalCards > 0 && (
-                <Button
-                  variant="secondary"
-                  accessibilityHint={`Abre ${totalCards} flashcards deste módulo`}
-                  onPress={() =>
-                    router.push({ pathname: '/flashcards/[id]', params: { id: modulo.id } })
-                  }>
-                  {`Revisar com flashcards (${totalCards})`}
-                </Button>
-              )}
-
-              {totalQuestoes > 0 && (
-                <Button
-                  accessibilityHint={`Inicia a avaliação com ${totalQuestoes} questões`}
-                  onPress={() => router.push({ pathname: '/quiz/[id]', params: { id: modulo.id } })}>
-                  {nota === undefined
-                    ? `Fazer avaliação (${totalQuestoes} questões)`
-                    : `Refazer avaliação · melhor nota ${Math.round(nota * 100)}%`}
-                </Button>
-              )}
-            </View>
+        <View style={styles.acoes}>
+          <Button
+            variant="secondary"
+            size="lg"
+            disabled={atual === 0}
+            onPress={() => setIndice(atual - 1)}
+            accessibilityLabel="Passo anterior">
+            ←
+          </Button>
+          <View style={styles.avancar}>
+            <Button bloco size="lg" onPress={avancar}>
+              {!ultima
+                ? 'Próximo passo'
+                : temAvaliacao
+                  ? 'Ir para a avaliação'
+                  : 'Concluir a aula'}
+            </Button>
           </View>
-        </ScrollView>
-      </SafeAreaView>
-    </ThemedView>
+        </View>
+      </Tela>
+    </View>
   );
 }
 
@@ -89,21 +123,17 @@ function BlocoConteudo({ bloco }: { bloco: Bloco }) {
 
   switch (bloco.tipo) {
     case 'paragrafo':
-      return (
-        <ThemedText type="default" themeColor="textSecondary">
-          {bloco.texto}
-        </ThemedText>
-      );
+      return <ThemedText type="default" themeColor="textSecondary">{bloco.texto}</ThemedText>;
 
     case 'lista':
       return (
-        <View style={styles.lista}>
+        <View>
           {bloco.itens.map((item) => (
-            <View key={item} style={styles.itemLista}>
-              <ThemedText type="default" themeColor="accent">
-                •
+            <View key={item} style={[styles.item, { borderBottomColor: theme.hairline }]}>
+              <ThemedText type="rowTitle" themeColor="accent">
+                —
               </ThemedText>
-              <ThemedText type="default" themeColor="textSecondary" style={styles.flex}>
+              <ThemedText type="small" style={styles.itemTexto}>
                 {item}
               </ThemedText>
             </View>
@@ -112,55 +142,51 @@ function BlocoConteudo({ bloco }: { bloco: Bloco }) {
       );
 
     case 'formula':
+      /*
+       * O bloco invertido é o mais alto do sistema — é onde a fórmula, a cifra
+       * e o grau ficam, em monoespaçada, sem competir com o corpo do texto.
+       */
       return (
-        <ThemedView type="accentSurface" style={[styles.formula, { borderColor: theme.accent }]}>
+        <View style={[styles.formula, { backgroundColor: theme.inverse }]}>
           {bloco.rotulo && (
-            <ThemedText type="small" themeColor="accent">
-              {bloco.rotulo.toUpperCase()}
+            <ThemedText type="label" style={{ color: theme.inverseMuted }}>
+              {bloco.rotulo}
             </ThemedText>
           )}
-          <ThemedText type="code" style={styles.formulaTexto}>
+          <ThemedText type="code" style={{ color: theme.inverseOn }}>
             {bloco.texto}
           </ThemedText>
-        </ThemedView>
+        </View>
       );
 
     case 'destaque':
-      return (
-        <ThemedView type="backgroundElement" style={styles.destaque}>
-          <ThemedText type="smallBold" themeColor="accent">
-            {bloco.titulo}
-          </ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            {bloco.texto}
-          </ThemedText>
-        </ThemedView>
-      );
+      return <Nota rotulo={bloco.titulo} texto={bloco.texto} />;
 
     case 'tabela':
       return (
-        // Tabelas largas rolam dentro do próprio container, sem empurrar a página.
+        // Tabelas largas rolam dentro do próprio bloco, sem empurrar a página.
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={[styles.tabela, { borderColor: theme.border }]}>
-            <View style={[styles.linha, { backgroundColor: theme.backgroundSelected }]}>
+          <View style={[styles.tabela, { borderColor: theme.text }]}>
+            <View style={{ flexDirection: 'row', backgroundColor: theme.inverse }}>
               {bloco.cabecalho.map((celula) => (
                 <View key={celula} style={styles.celula}>
-                  <ThemedText type="smallBold" themeColor="accent">
+                  <ThemedText type="label" style={{ color: theme.inverseOn }}>
                     {celula}
                   </ThemedText>
                 </View>
               ))}
             </View>
-            {bloco.linhas.map((linha, indice) => (
-              <View
-                key={indice}
-                style={[
-                  styles.linha,
-                  { borderTopColor: theme.border, borderTopWidth: 1 },
-                ]}>
-                {linha.map((celula, i) => (
-                  <View key={i} style={styles.celula}>
-                    <ThemedText type="small" themeColor={i === 0 ? 'text' : 'textSecondary'}>
+
+            {bloco.linhas.map((linha, i) => (
+              <View key={i} style={[styles.linha, { borderTopColor: theme.hairline }]}>
+                {linha.map((celula, j) => (
+                  <View
+                    key={j}
+                    style={[
+                      styles.celula,
+                      j > 0 && { borderLeftWidth: Rules.hair, borderLeftColor: theme.hairline },
+                    ]}>
+                    <ThemedText type={j === 0 ? 'smallBold' : 'small'} themeColor="text">
                       {celula}
                     </ThemedText>
                   </View>
@@ -173,65 +199,38 @@ function BlocoConteudo({ bloco }: { bloco: Bloco }) {
   }
 }
 
-function Aviso({ texto }: { texto: string }) {
-  return (
-    <ThemedView style={styles.root}>
-      <SafeAreaView style={[styles.flex, styles.centro]}>
-        <View style={styles.content}>
-          <Cabecalho titulo="Ops" />
-          <ThemedText type="default" themeColor="textSecondary">
-            {texto}
-          </ThemedText>
-        </View>
-      </SafeAreaView>
-    </ThemedView>
-  );
-}
-
 const styles = StyleSheet.create({
-  root: { flex: 1 },
-  flex: { flex: 1 },
-  centro: { justifyContent: 'center', alignItems: 'center', paddingHorizontal: Spacing.four },
-  scroll: {
-    flexGrow: 1,
-    alignItems: 'center',
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.four,
-    paddingBottom: Spacing.six,
+  raiz: { flex: 1 },
+  item: {
+    flexDirection: 'row',
+    gap: Spacing.two + Spacing.one,
+    paddingVertical: Spacing.two,
+    borderBottomWidth: Rules.hair,
   },
-  content: {
-    width: '100%',
-    maxWidth: MaxContentWidth,
-    gap: Spacing.four,
-  },
-  secao: { gap: Spacing.three },
-  secaoTitulo: { fontWeight: '700' },
-  lista: { gap: Spacing.two },
-  itemLista: { flexDirection: 'row', gap: Spacing.two },
+  itemTexto: { flex: 1 },
   formula: {
-    borderWidth: 1,
-    borderRadius: Spacing.three,
-    padding: Spacing.three,
+    padding: Spacing.two + Spacing.one,
     gap: Spacing.one,
-  },
-  formulaTexto: { fontSize: 15, lineHeight: 24 },
-  destaque: {
-    borderRadius: Spacing.three,
-    padding: Spacing.three,
-    gap: Spacing.one,
+    borderRadius: Radius,
   },
   tabela: {
-    borderWidth: 1,
-    borderRadius: Spacing.two,
-    overflow: 'hidden',
-    minWidth: 320,
+    borderWidth: Rules.thick,
+    borderRadius: Radius,
+    minWidth: 300,
   },
-  linha: { flexDirection: 'row' },
+  linha: { flexDirection: 'row', borderTopWidth: Rules.hair },
   celula: {
-    width: 150,
+    width: 148,
     paddingHorizontal: Spacing.two,
     paddingVertical: Spacing.two,
     justifyContent: 'center',
   },
-  acoes: { gap: Spacing.two, paddingTop: Spacing.two },
+  acoes: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    gap: Spacing.two,
+    marginTop: 'auto',
+    paddingTop: Spacing.three,
+  },
+  avancar: { flex: 1 },
 });

@@ -1,19 +1,41 @@
-import { ActivityIndicator, Pressable, StyleSheet, type PressableProps } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View, type PressableProps } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { MinTouchTarget, Spacing } from '@/constants/theme';
+import { Fonts, MinTouchTarget, Radius, Rules, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export type ButtonProps = Omit<PressableProps, 'children' | 'style'> & {
   children: string;
-  /** primary = roxo preenchido | secondary = contorno roxo | ghost = só texto */
-  variant?: 'primary' | 'secondary' | 'ghost';
+  /**
+   * `primary` preenche com o destaque, `secondary` é contorno de 1px e
+   * `ghost` é só o rótulo em destaque.
+   *
+   * `inverso` é o par de `primary` para usar **por cima de um bloco de
+   * destaque**: lá o preenchimento vermelho sumiria e o rótulo em destaque
+   * ficaria ilegível, então as duas cores trocam de lado.
+   */
+  variant?: 'primary' | 'secondary' | 'ghost' | 'inverso';
+  size?: 'sm' | 'md' | 'lg';
+  /**
+   * Ocupa a largura toda. No Modernist o rótulo de um botão largo fica
+   * **rente à esquerda** — nunca centralizado. É a regra do sistema, e é o que
+   * dá à pilha de botões o mesmo eixo do texto ao lado.
+   */
+  bloco?: boolean;
   loading?: boolean;
 };
+
+const TAMANHOS = {
+  sm: { fontSize: 12, py: Spacing.two, px: Spacing.two + Spacing.one },
+  md: { fontSize: 14, py: Spacing.two + Spacing.one, px: Spacing.three - Spacing.half },
+  lg: { fontSize: 15, py: Spacing.three - Spacing.one, px: Spacing.three },
+} as const;
 
 export function Button({
   children,
   variant = 'primary',
+  size = 'md',
+  bloco = false,
   loading = false,
   disabled,
   accessibilityHint,
@@ -21,54 +43,97 @@ export function Button({
 }: ButtonProps) {
   const theme = useTheme();
   const isDisabled = disabled || loading;
+  const metrica = TAMANHOS[size];
 
-  const background =
-    variant === 'primary' ? theme.accentStrong : variant === 'secondary' ? 'transparent' : 'transparent';
-  const label = variant === 'primary' ? theme.accentOn : theme.accent;
+  const rotulo =
+    variant === 'primary' ? theme.accentOn : variant === 'inverso' ? theme.accentStrong : theme.accent;
 
   return (
     <Pressable
       accessibilityRole="button"
-      // Rótulo vem do texto visível; o hint é opcional e complementa.
+      // O rótulo vem do texto visível; o hint é opcional e complementa.
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: !!isDisabled, busy: loading }}
       disabled={isDisabled}
+      // Alvo de 44pt sem inchar o botão pequeno, que é visualmente menor.
+      hitSlop={size === 'sm' ? Spacing.two : undefined}
       style={({ pressed }) => [
         styles.base,
-        { backgroundColor: background },
-        variant === 'secondary' && { borderWidth: 1, borderColor: theme.accent },
-        pressed && styles.pressed,
-        isDisabled && styles.disabled,
+        { paddingVertical: metrica.py, paddingHorizontal: metrica.px },
+        size !== 'sm' && styles.alvoMinimo,
+        bloco ? styles.bloco : styles.hug,
+        variant === 'primary' && { backgroundColor: theme.accentStrong },
+        variant === 'inverso' && { backgroundColor: theme.accentOn },
+        variant === 'secondary' && { borderWidth: Rules.hair, borderColor: theme.border },
+        /*
+         * Estado pressionado vindo da rampa do destaque — um passo além da
+         * base, como manda o sistema. `accent` é o passo mais escuro no tema
+         * claro e o mais claro no escuro, então o mesmo token serve aos dois.
+         */
+        pressed && variant === 'primary' && { backgroundColor: theme.accent },
+        pressed && variant === 'inverso' && { backgroundColor: theme.accentSurface },
+        pressed && variant === 'secondary' && { backgroundColor: theme.backgroundSelected },
+        pressed && variant === 'ghost' && { backgroundColor: theme.accentSurface },
+        isDisabled && styles.desabilitado,
       ]}
       {...rest}>
-      {loading ? (
-        <ActivityIndicator color={label} />
-      ) : (
-        <ThemedText type="default" style={[styles.label, { color: label }]}>
-          {children}
-        </ThemedText>
+      {/*
+        O indicador ocupa o lugar do rótulo sem mudar a altura do botão: sem
+        isso a pilha de botões pula quando um deles entra em carregamento.
+      */}
+      {loading && (
+        <View style={styles.carregando}>
+          <ActivityIndicator color={rotulo} size="small" />
+        </View>
       )}
+      <ThemedText
+        style={[
+          styles.rotulo,
+          { color: rotulo, fontSize: metrica.fontSize },
+          loading && styles.invisivel,
+        ]}>
+        {children}
+      </ThemedText>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   base: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: Radius,
+  },
+  alvoMinimo: {
     minHeight: MinTouchTarget,
-    paddingVertical: Spacing.three,
-    paddingHorizontal: Spacing.four,
-    borderRadius: Spacing.three,
+  },
+  /** Largura total, rótulo rente à esquerda — a assinatura do sistema. */
+  bloco: {
+    width: '100%',
+    justifyContent: 'flex-start',
+  },
+  hug: {
+    alignSelf: 'flex-start',
+    justifyContent: 'center',
+  },
+  rotulo: {
+    /*
+     * O peso vai na FAMÍLIA, não só em `fontWeight`: no nativo cada peso do
+     * Archivo é uma família própria, e `fontWeight` sozinho não a escolhe.
+     */
+    fontFamily: Fonts.extrabold,
+    fontWeight: '800',
+    textAlign: 'left',
+  },
+  invisivel: { opacity: 0 },
+  carregando: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  label: {
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  pressed: {
-    opacity: 0.7,
-  },
-  disabled: {
-    opacity: 0.5,
-  },
+  desabilitado: { opacity: 0.45 },
 });

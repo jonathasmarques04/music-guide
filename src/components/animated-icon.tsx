@@ -1,14 +1,17 @@
 import { Image } from 'expo-image';
 import * as SplashScreen from 'expo-splash-screen';
 import { useState } from 'react';
-import { Dimensions, StyleSheet, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import Animated, { Easing, Keyframe } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
+
+import { useTheme } from '@/hooks/use-theme';
 
 const INITIAL_SCALE_FACTOR = Dimensions.get('screen').height / 90;
 const DURATION = 600;
 
 export function AnimatedSplashOverlay() {
+  const cores = useTheme();
   const [animate, setAnimate] = useState(false);
   const [visible, setVisible] = useState(true);
 
@@ -33,7 +36,16 @@ export function AnimatedSplashOverlay() {
     },
   });
 
-  const image = <Image style={styles.image} source={require('@/assets/images/expo-logo.png')} />;
+  /*
+   * A marca do splash é o bloco invertido do Modernist: um quadrado de tinta,
+   * sem raio, com a nota em cima. Nada de gradiente nem de brilho — o sistema
+   * não decora, e esta é a primeira tela que o aluno vê.
+   */
+  const marca = (
+    <View style={[styles.marca, { backgroundColor: cores.inverse }]}>
+      <Text style={[styles.nota, { color: cores.inverseOn }]}>♪</Text>
+    </View>
+  );
 
   return animate ? (
     <Animated.View
@@ -43,8 +55,8 @@ export function AnimatedSplashOverlay() {
           scheduleOnRN(setVisible, false);
         }
       })}
-      style={styles.splashOverlay}>
-      {image}
+      style={[styles.splashOverlay, { backgroundColor: cores.background }]}>
+      {marca}
     </Animated.View>
   ) : (
     <View
@@ -53,8 +65,8 @@ export function AnimatedSplashOverlay() {
           setAnimate(true);
         });
       }}
-      style={styles.splashOverlay}>
-      {image}
+      style={[styles.splashOverlay, { backgroundColor: cores.background }]}>
+      {marca}
     </View>
   );
 }
@@ -138,9 +150,19 @@ const styles = StyleSheet.create({
     height: 128,
     position: 'absolute',
   },
+  marca: {
+    width: 96,
+    height: 96,
+    borderRadius: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nota: {
+    fontSize: 48,
+    lineHeight: 58,
+  },
   splashOverlay: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: '#208AEF',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1000,

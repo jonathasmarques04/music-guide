@@ -1,13 +1,16 @@
 /**
- * O app é totalmente escuro e NÃO segue o esquema do sistema.
+ * A paleta do esquema em vigor.
  *
- * Este hook sempre devolve a paleta escura. `Colors.light` e `Colors.dark`
- * apontam para a mesma paleta (ver `constants/theme.ts`), então nenhum caminho
- * de código consegue renderizar um tema claro.
+ * O app segue o sistema (`userInterfaceStyle: "automatic"` no `app.json`):
+ * `Colors.light` é o chão claro do Modernist e `Colors.dark` é a mesma
+ * linguagem com o chão invertido. Componente nenhum deve ler `Colors` direto
+ * — sempre por aqui, senão o modo escuro passa batido.
  */
 
 import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export function useTheme() {
-  return Colors.dark;
+  // `useColorScheme` também devolve null e 'unspecified'; só 'dark' vira escuro.
+  return useColorScheme() === 'dark' ? Colors.dark : Colors.light;
 }
