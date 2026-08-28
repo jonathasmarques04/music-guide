@@ -1,7 +1,15 @@
+import { useEffect } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { ThemedText } from '@/components/themed-text';
-import { MinTouchTarget, Rules, Spacing } from '@/constants/theme';
+import { MinTouchTarget, Motion, Rules, Spacing } from '@/constants/theme';
+import { useHover } from '@/hooks/use-hover';
 import { useTheme } from '@/hooks/use-theme';
 
 export type BarraProgressoProps = {
@@ -27,6 +35,22 @@ export function BarraProgresso({
   const fracao = Math.min(1, Math.max(0, valor));
   const percentual = Math.round(fracao * 100);
 
+  /*
+   * A barra corre até o valor novo. Quem lê o número (o leitor de tela, pelo
+   * `accessibilityValue` abaixo) recebe o destino de imediato — a animação é
+   * só para os olhos, e nunca atrasa a informação.
+   */
+  const reduzirMovimento = useReducedMotion();
+  const preenchido = useSharedValue(fracao);
+
+  useEffect(() => {
+    preenchido.value = reduzirMovimento ? fracao : withTiming(fracao, Motion.valor);
+  }, [fracao, reduzirMovimento, preenchido]);
+
+  const preenchimentoStyle = useAnimatedStyle(() => ({
+    width: `${preenchido.value * 100}%`,
+  }));
+
   return (
     <View
       accessibilityRole="progressbar"
@@ -44,12 +68,12 @@ export function BarraProgresso({
           backgroundColor: sobreDestaque ? theme.accent : theme.backgroundSelected,
         },
       ]}>
-      <View
-        style={{
-          width: `${percentual}%`,
-          height: '100%',
-          backgroundColor: sobreDestaque ? theme.accentOn : theme.accentStrong,
-        }}
+      <Animated.View
+        style={[
+          styles.preenchimento,
+          { backgroundColor: sobreDestaque ? theme.accentOn : theme.accentStrong },
+          preenchimentoStyle,
+        ]}
       />
     </View>
   );
@@ -72,6 +96,7 @@ export type BarraPassosProps = {
  */
 export function BarraPassos({ atual, total, rotulo, onSair, rotuloSair }: BarraPassosProps) {
   const theme = useTheme();
+  const ponteiro = useHover();
 
   return (
     <View style={[styles.passos, { borderBottomColor: theme.divider }]}>
@@ -80,7 +105,12 @@ export function BarraPassos({ atual, total, rotulo, onSair, rotuloSair }: BarraP
         accessibilityLabel={rotuloSair}
         onPress={onSair}
         hitSlop={Spacing.two}
-        style={({ pressed }) => [styles.sair, pressed && styles.pressionado]}>
+        {...ponteiro.props}
+        style={({ pressed }) => [
+          styles.sair,
+          ponteiro.hover && styles.sobPonteiro,
+          pressed && styles.pressionado,
+        ]}>
         <ThemedText type="heading">✕</ThemedText>
       </Pressable>
 
@@ -97,6 +127,7 @@ export function BarraPassos({ atual, total, rotulo, onSair, rotuloSair }: BarraP
 
 const styles = StyleSheet.create({
   trilho: { width: '100%', overflow: 'hidden' },
+  preenchimento: { height: '100%' },
   passos: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -113,5 +144,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   trilhoPassos: { flex: 1 },
+  sobPonteiro: { opacity: 0.8 },
   pressionado: { opacity: 0.6 },
 });

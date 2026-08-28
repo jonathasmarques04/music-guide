@@ -6,7 +6,7 @@ import Animated, {
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
-  withTiming,
+  withSpring,
 } from 'react-native-reanimated';
 
 import { ThemedText } from '@/components/themed-text';
@@ -25,8 +25,9 @@ import {
   type Avaliacao,
 } from '@/content/repeticao';
 import type { Flashcard } from '@/content/tipos';
-import { Radius, Rules, Spacing } from '@/constants/theme';
+import { Motion, Radius, Rules, Spacing } from '@/constants/theme';
 import { chaveCard, useRevisao } from '@/contexts/revisao';
+import { useHover } from '@/hooks/use-hover';
 import { useTheme } from '@/hooks/use-theme';
 
 /**
@@ -57,19 +58,20 @@ export default function FlashcardsScreen() {
   if (!modulo || cards.length === 0) {
     return (
       <Tela>
-        <Cabecalho voltar="a revisão" titulo="Sem baralho" />
+        <Cabecalho voltar="a revisão" destino="/revisar" titulo="Sem baralho" />
         <ThemedText type="small">Este módulo ainda não tem cards de revisão.</ThemedText>
       </Tela>
     );
   }
 
-  const sair = () => router.push({ pathname: '/modulo/[id]', params: { id: modulo.id } });
+  const sair = () => router.dismissTo({ pathname: '/modulo/[id]', params: { id: modulo.id } });
 
   if (posicao >= fila.length) {
     return (
       <Tela>
         <Cabecalho
           voltar="o módulo"
+          destino={{ pathname: '/modulo/[id]', params: { id: modulo.id } }}
           kicker="Sessão concluída"
           titulo={modulo.titulo}
         />
@@ -201,13 +203,20 @@ function Cartao({
   onVirar: () => void;
 }) {
   const theme = useTheme();
+  const ponteiro = useHover();
   const reduzirMovimento = useReducedMotion();
   const giro = useSharedValue(0);
 
   useEffect(() => {
     const destino = virado ? 1 : 0;
-    // Respeita "reduzir movimento": troca instantânea em vez de animação.
-    giro.value = reduzirMovimento ? destino : withTiming(destino, { duration: 400 });
+    /*
+     * Mola, e não tempo linear: uma carta de verdade tem inércia e assenta no
+     * fim do giro. É o único movimento do app com peso — em todo o resto o
+     * sistema é seco de propósito.
+     *
+     * Respeita "reduzir movimento": ali a troca é instantânea.
+     */
+    giro.value = reduzirMovimento ? destino : withSpring(destino, Motion.giro);
   }, [virado, reduzirMovimento, giro]);
 
   const frenteStyle = useAnimatedStyle(() => ({
@@ -232,6 +241,7 @@ function Cartao({
       accessibilityHint={virado ? 'Toque para ver a pergunta' : 'Toque para ver a resposta'}
       accessibilityState={{ expanded: virado }}
       onPress={onVirar}
+      {...ponteiro.props}
       style={styles.area}>
       <Animated.View
         style={[
@@ -241,8 +251,9 @@ function Cartao({
         ]}>
         <ThemedText type="label">Frente</ThemedText>
         <ThemedText type="title">{card.frente}</ThemedText>
+        {/* Na web o ponteiro já diz que dá para clicar; a dica então muda de verbo. */}
         <ThemedText type="small" style={styles.dica}>
-          Toque no card para ver a resposta
+          {ponteiro.hover ? 'Clique para ver a resposta' : 'Toque no card para ver a resposta'}
         </ThemedText>
       </Animated.View>
 

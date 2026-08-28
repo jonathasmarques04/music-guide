@@ -4,6 +4,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Tag } from '@/components/ui/tag';
 import { MinTouchTarget, Rules, Spacing } from '@/constants/theme';
 import type { StatusModulo } from '@/contexts/progresso';
+import { useHover } from '@/hooks/use-hover';
 import { useTheme } from '@/hooks/use-theme';
 
 export type LinhaModuloProps = {
@@ -28,8 +29,11 @@ export type LinhaModuloProps = {
 export function LinhaModulo({ numero, titulo, detalhe, status, nota, onPress }: LinhaModuloProps) {
   const theme = useTheme();
 
+  const ponteiro = useHover();
   const bloqueado = status === 'bloqueado';
   const atual = status === 'atual';
+  /* Linha trancada não acende: o hover não pode prometer o que o toque nega. */
+  const realce = ponteiro.hover && !bloqueado;
   const cor = atual ? theme.accentOn : theme.text;
 
   return (
@@ -42,12 +46,15 @@ export function LinhaModulo({ numero, titulo, detalhe, status, nota, onPress }: 
       accessibilityState={{ disabled: bloqueado, selected: atual }}
       disabled={bloqueado}
       onPress={onPress}
+      {...ponteiro.props}
       style={({ pressed }) => [
         styles.linha,
         { borderBottomColor: theme.hairline },
         status === 'concluido' && { backgroundColor: theme.backgroundElement },
         atual && { backgroundColor: theme.accentStrong },
         bloqueado && styles.bloqueada,
+        realce && !atual && { backgroundColor: theme.backgroundElement },
+        realce && atual && { backgroundColor: theme.accentHover },
         pressed && !atual && { backgroundColor: theme.backgroundSelected },
       ]}>
       <View style={[styles.numero, { borderRightColor: atual ? theme.accentOn : theme.hairline }]}>

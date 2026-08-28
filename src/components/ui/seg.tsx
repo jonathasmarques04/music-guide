@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { MinTouchTarget, Radius, Rules, Spacing } from '@/constants/theme';
+import { useHover } from '@/hooks/use-hover';
 import { useTheme } from '@/hooks/use-theme';
 
 export type OpcaoSeg<T extends string> = { valor: T; rotulo: string };
@@ -29,30 +30,55 @@ export function Seg<T extends string>({ legenda, opcoes, valor, onChange }: SegP
       accessibilityRole="radiogroup"
       accessibilityLabel={legenda}
       style={[styles.caixa, { borderColor: theme.border }]}>
-      {opcoes.map((opcao, i) => {
-        const ativa = opcao.valor === valor;
-
-        return (
-          <Pressable
-            key={opcao.valor}
-            accessibilityRole="radio"
-            accessibilityState={{ checked: ativa, selected: ativa }}
-            onPress={() => onChange(opcao.valor)}
-            style={({ pressed }) => [
-              styles.opcao,
-              i > 0 && { borderLeftWidth: Rules.hair, borderLeftColor: theme.border },
-              ativa && { backgroundColor: theme.accentStrong },
-              pressed && !ativa && { backgroundColor: theme.backgroundSelected },
-            ]}>
-            <ThemedText
-              type="smallBold"
-              style={{ color: ativa ? theme.accentOn : theme.textSecondary }}>
-              {opcao.rotulo}
-            </ThemedText>
-          </Pressable>
-        );
-      })}
+      {opcoes.map((opcao, i) => (
+        <Opcao
+          key={opcao.valor}
+          opcao={opcao}
+          primeira={i === 0}
+          ativa={opcao.valor === valor}
+          onPress={() => onChange(opcao.valor)}
+        />
+      ))}
     </View>
+  );
+}
+
+/*
+ * Cada opção é um componente próprio porque o hover é estado, e estado não pode
+ * morar dentro de um `map`.
+ */
+function Opcao({
+  opcao,
+  primeira,
+  ativa,
+  onPress,
+}: {
+  opcao: { valor: string; rotulo: string };
+  primeira: boolean;
+  ativa: boolean;
+  onPress: () => void;
+}) {
+  const theme = useTheme();
+  const ponteiro = useHover();
+
+  return (
+    <Pressable
+      accessibilityRole="radio"
+      accessibilityState={{ checked: ativa, selected: ativa }}
+      onPress={onPress}
+      {...ponteiro.props}
+      style={({ pressed }) => [
+        styles.opcao,
+        !primeira && { borderLeftWidth: Rules.hair, borderLeftColor: theme.border },
+        ativa && { backgroundColor: theme.accentStrong },
+        ponteiro.hover && !ativa && { backgroundColor: theme.backgroundElement },
+        ponteiro.hover && ativa && { backgroundColor: theme.accentHover },
+        pressed && !ativa && { backgroundColor: theme.backgroundSelected },
+      ]}>
+      <ThemedText type="smallBold" style={{ color: ativa ? theme.accentOn : theme.textSecondary }}>
+        {opcao.rotulo}
+      </ThemedText>
+    </Pressable>
   );
 }
 

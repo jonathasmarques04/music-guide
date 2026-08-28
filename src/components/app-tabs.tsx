@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from './themed-text';
 
 import { MinTouchTarget, Rules, Spacing } from '@/constants/theme';
+import { useHover } from '@/hooks/use-hover';
 import { useTheme } from '@/hooks/use-theme';
 
 /**
@@ -62,6 +63,7 @@ function Faixa({ children, ...props }: React.ComponentProps<typeof View>) {
 
 function Aba({ children, isFocused, ...props }: TabTriggerSlotProps) {
   const theme = useTheme();
+  const ponteiro = useHover();
 
   return (
     <Pressable
@@ -72,9 +74,11 @@ function Aba({ children, isFocused, ...props }: TabTriggerSlotProps) {
       // `accessibilityState.selected` sozinho.
       accessibilityState={{ selected: isFocused }}
       aria-selected={isFocused}
+      {...ponteiro.props}
       style={({ pressed }) => [
         styles.aba,
         { borderRightColor: theme.hairline },
+        ponteiro.hover && { backgroundColor: theme.backgroundElement },
         pressed && { backgroundColor: theme.backgroundSelected },
       ]}>
       {/*

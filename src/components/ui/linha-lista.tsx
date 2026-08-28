@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { MinTouchTarget, Rules, Spacing } from '@/constants/theme';
+import { useHover } from '@/hooks/use-hover';
 import { useTheme } from '@/hooks/use-theme';
 
 export type LinhaListaProps = {
@@ -21,6 +22,7 @@ export type LinhaListaProps = {
  */
 export function LinhaLista({ rotulo, valor, onPress, accessibilityHint }: LinhaListaProps) {
   const theme = useTheme();
+  const ponteiro = useHover();
 
   const conteudo = (
     <>
@@ -50,9 +52,11 @@ export function LinhaLista({ rotulo, valor, onPress, accessibilityHint }: LinhaL
       accessibilityLabel={valor ? `${rotulo}: ${valor}` : rotulo}
       accessibilityHint={accessibilityHint}
       onPress={onPress}
+      {...ponteiro.props}
       style={({ pressed }) => [
         styles.linha,
         { borderBottomColor: theme.hairline },
+        ponteiro.hover && { backgroundColor: theme.backgroundElement },
         pressed && { backgroundColor: theme.backgroundSelected },
       ]}>
       {conteudo}

@@ -71,6 +71,8 @@ const claro = {
   accent: '#ae1800',
   /** Destaque de PREENCHIMENTO de controle com rótulo pequeno. */
   accentStrong: '#c62410',
+  /** Um passo da rampa adiante de `accentStrong`: o preenchimento sob o ponteiro. */
+  accentHover: '#ba1e08',
   /** Vermelhão de pôster: só tipografia grande e réguas de destaque. */
   accentDisplay: '#ec3013',
   /** Conteúdo por cima de `accentStrong` e `accentDisplay`. */
@@ -119,6 +121,8 @@ const escuro = {
 
   accent: '#ff9783',
   accentStrong: '#ff563c',
+  /** No escuro a rampa sobe em vez de descer — o hover CLAREIA. */
+  accentHover: '#ff7663',
   accentDisplay: '#ec3013',
   /** No escuro o rótulo por cima do preenchimento é a TINTA, não o bone. */
   accentOn: '#201e1d',
@@ -194,6 +198,31 @@ export const Rules = {
   thick: 2,
   /** Fio entre itens de lista. Cor: `hairline`. */
   hair: 1,
+} as const;
+
+/**
+ * Movimento.
+ *
+ * O Modernist não decora — e isso vale para a animação. Nada aqui existe por
+ * capricho: o movimento tem função. O toque afunda para dizer que foi
+ * registrado; a barra corre até o novo valor em vez de já aparecer nele; o
+ * card gira com o peso de uma carta virando de verdade.
+ *
+ * Tudo curto e sem quique decorativo. Uma interface que faz o aluno esperar a
+ * animação acabar é mais lenta que uma sem animação nenhuma.
+ *
+ * Todo consumidor destes tokens precisa checar `useReducedMotion()` e cair
+ * para a troca instantânea — movimento é reforço, nunca o único sinal.
+ */
+export const Motion = {
+  /** Reação ao toque: rígida e quase sem oscilação, para parecer instantânea. */
+  toque: { damping: 20, stiffness: 400, mass: 0.5 },
+  /** Quanto o alvo encolhe enquanto está pressionado. */
+  escalaToque: 0.97,
+  /** Valor mudando na tela: barra de progresso, contador de placar. */
+  valor: { duration: 520 },
+  /** O giro do flashcard — o gesto mais marcante do app, e o único com peso. */
+  giro: { damping: 14, stiffness: 100, mass: 0.9 },
 } as const;
 
 /** Altura mínima de alvo de toque (WCAG 2.5.5 / iOS HIG). */

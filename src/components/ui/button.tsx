@@ -1,7 +1,14 @@
 import { ActivityIndicator, Pressable, StyleSheet, View, type PressableProps } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 
 import { ThemedText } from '@/components/themed-text';
-import { Fonts, MinTouchTarget, Radius, Rules, Spacing } from '@/constants/theme';
+import { Fonts, MinTouchTarget, Motion, Radius, Rules, Spacing } from '@/constants/theme';
+import { useHover } from '@/hooks/use-hover';
 import { useTheme } from '@/hooks/use-theme';
 
 export type ButtonProps = Omit<PressableProps, 'children' | 'style'> & {
@@ -45,60 +52,102 @@ export function Button({
   const isDisabled = disabled || loading;
   const metrica = TAMANHOS[size];
 
+  /*
+   * O afundar ao toque mora num invólucro, e não no próprio `Pressable`: a cor
+   * do estado pressionado continua vindo do callback `({ pressed })` do RN, que
+   * é o padrão do projeto, e a escala fica por conta do Reanimated. Misturar os
+   * dois no mesmo nó exigiria abrir mão de um dos dois.
+   */
+  const reduzirMovimento = useReducedMotion();
+  const escala = useSharedValue(1);
+
+  const afundar = (pressionado: boolean) => {
+    if (reduzirMovimento || isDisabled) return;
+    escala.value = withSpring(pressionado ? Motion.escalaToque : 1, Motion.toque);
+  };
+
+  const escalaStyle = useAnimatedStyle(() => ({ transform: [{ scale: escala.value }] }));
+
+  /*
+   * O ponteiro acende um passo da rampa ANTES do toque: base → hover →
+   * pressionado. Onde a rampa não tem três degraus (o `inverso`, que vive sobre
+   * o cartão de destaque), hover e pressionado dividem a cor — quem separa os
+   * dois ali é o afundar, que só o toque dispara.
+   *
+   * Botão desabilitado não reage: prometer resposta a um controle morto é pior
+   * que não responder.
+   */
+  const ponteiro = useHover();
+  const realce = ponteiro.hover && !isDisabled;
+
   const rotulo =
     variant === 'primary' ? theme.accentOn : variant === 'inverso' ? theme.accentStrong : theme.accent;
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      // O rótulo vem do texto visível; o hint é opcional e complementa.
-      accessibilityHint={accessibilityHint}
-      accessibilityState={{ disabled: !!isDisabled, busy: loading }}
-      disabled={isDisabled}
-      // Alvo de 44pt sem inchar o botão pequeno, que é visualmente menor.
-      hitSlop={size === 'sm' ? Spacing.two : undefined}
-      style={({ pressed }) => [
-        styles.base,
-        { paddingVertical: metrica.py, paddingHorizontal: metrica.px },
-        size !== 'sm' && styles.alvoMinimo,
-        bloco ? styles.bloco : styles.hug,
-        variant === 'primary' && { backgroundColor: theme.accentStrong },
-        variant === 'inverso' && { backgroundColor: theme.accentOn },
-        variant === 'secondary' && { borderWidth: Rules.hair, borderColor: theme.border },
-        /*
-         * Estado pressionado vindo da rampa do destaque — um passo além da
-         * base, como manda o sistema. `accent` é o passo mais escuro no tema
-         * claro e o mais claro no escuro, então o mesmo token serve aos dois.
-         */
-        pressed && variant === 'primary' && { backgroundColor: theme.accent },
-        pressed && variant === 'inverso' && { backgroundColor: theme.accentSurface },
-        pressed && variant === 'secondary' && { backgroundColor: theme.backgroundSelected },
-        pressed && variant === 'ghost' && { backgroundColor: theme.accentSurface },
-        isDisabled && styles.desabilitado,
-      ]}
-      {...rest}>
-      {/*
-        O indicador ocupa o lugar do rótulo sem mudar a altura do botão: sem
-        isso a pilha de botões pula quando um deles entra em carregamento.
-      */}
-      {loading && (
-        <View style={styles.carregando}>
-          <ActivityIndicator color={rotulo} size="small" />
-        </View>
-      )}
-      <ThemedText
-        style={[
-          styles.rotulo,
-          { color: rotulo, fontSize: metrica.fontSize },
-          loading && styles.invisivel,
-        ]}>
-        {children}
-      </ThemedText>
-    </Pressable>
+    <Animated.View style={[bloco ? styles.envoltorioBloco : styles.envoltorioHug, escalaStyle]}>
+      <Pressable
+        accessibilityRole="button"
+        // O rótulo vem do texto visível; o hint é opcional e complementa.
+        accessibilityHint={accessibilityHint}
+        accessibilityState={{ disabled: !!isDisabled, busy: loading }}
+        disabled={isDisabled}
+        // Alvo de 44pt sem inchar o botão pequeno, que é visualmente menor.
+        hitSlop={size === 'sm' ? Spacing.two : undefined}
+        onPressIn={() => afundar(true)}
+        onPressOut={() => afundar(false)}
+        style={({ pressed }) => [
+          styles.base,
+          { paddingVertical: metrica.py, paddingHorizontal: metrica.px },
+          size !== 'sm' && styles.alvoMinimo,
+          bloco ? styles.bloco : styles.hug,
+          variant === 'primary' && { backgroundColor: theme.accentStrong },
+          variant === 'inverso' && { backgroundColor: theme.accentOn },
+          variant === 'secondary' && { borderWidth: Rules.hair, borderColor: theme.border },
+          realce && variant === 'primary' && { backgroundColor: theme.accentHover },
+          realce && variant === 'inverso' && { backgroundColor: theme.accentSurface },
+          realce &&
+            variant === 'secondary' && { backgroundColor: theme.backgroundElement, borderColor: theme.text },
+          realce && variant === 'ghost' && { backgroundColor: theme.backgroundElement },
+          /*
+           * Estado pressionado vindo da rampa do destaque — um passo além da
+           * base, como manda o sistema. `accent` é o passo mais escuro no tema
+           * claro e o mais claro no escuro, então o mesmo token serve aos dois.
+           */
+          pressed && variant === 'primary' && { backgroundColor: theme.accent },
+          pressed && variant === 'inverso' && { backgroundColor: theme.accentSurface },
+          pressed && variant === 'secondary' && { backgroundColor: theme.backgroundSelected },
+          pressed && variant === 'ghost' && { backgroundColor: theme.accentSurface },
+          isDisabled && styles.desabilitado,
+        ]}
+        {...rest}
+      /* Depois de `rest`: a aparência do hover é do próprio botão, não do consumidor. */
+      {...ponteiro.props}>
+        {/*
+          O indicador ocupa o lugar do rótulo sem mudar a altura do botão: sem
+          isso a pilha de botões pula quando um deles entra em carregamento.
+        */}
+        {loading && (
+          <View style={styles.carregando}>
+            <ActivityIndicator color={rotulo} size="small" />
+          </View>
+        )}
+        <ThemedText
+          style={[
+            styles.rotulo,
+            { color: rotulo, fontSize: metrica.fontSize },
+            loading && styles.invisivel,
+          ]}>
+          {children}
+        </ThemedText>
+      </Pressable>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
+  /* O invólucro só repassa a largura; quem desenha o botão é o `Pressable`. */
+  envoltorioBloco: { width: '100%' },
+  envoltorioHug: { alignSelf: 'flex-start' },
   base: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -60,6 +60,8 @@ const pares = (p) => [
   [4.5, 'accent / backgroundElement', p.accent, p.backgroundElement],
   [4.5, 'accent / accentSurface (tag)', p.accent, p.accentSurface],
   [4.5, 'accentOn / accentStrong (rótulo de botão, linha da trilha)', p.accentOn, p.accentStrong],
+  [4.5, 'accentOn / accentHover (rótulo de botão sob o ponteiro)', p.accentOn, p.accentHover],
+  [3.0, 'accentHover / background (botão sob o ponteiro)', p.accentHover, p.background],
   [4.5, 'accentStrong / accentOn (botão inverso, sobre o cartão)', p.accentStrong, p.accentOn],
   [3.0, 'accentStrong / background (contorno de controle)', p.accentStrong, p.background],
   [3.0, 'accentStrong / backgroundSelected (barra de progresso)', p.accentStrong, p.backgroundSelected],

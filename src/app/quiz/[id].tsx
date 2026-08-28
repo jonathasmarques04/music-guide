@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 
 import { ThemedText } from '@/components/themed-text';
 import { BarraPassos } from '@/components/ui/barra';
@@ -12,8 +13,9 @@ import { Tela } from '@/components/ui/tela';
 import { MODULOS, moduloPorId } from '@/content/modulos';
 import { quizPorModulo } from '@/content/quiz';
 import { NOTA_MINIMA, type Questao } from '@/content/tipos';
-import { MinTouchTarget, Radius, Rules, Spacing } from '@/constants/theme';
+import { MinTouchTarget, Motion, Radius, Rules, Spacing } from '@/constants/theme';
 import { useProgresso } from '@/contexts/progresso';
+import { useHover } from '@/hooks/use-hover';
 import { useTheme } from '@/hooks/use-theme';
 
 const PERCENTUAL_MINIMO = Math.round(NOTA_MINIMA * 100);
@@ -37,7 +39,7 @@ export default function QuizScreen() {
   if (!modulo || questoes.length === 0) {
     return (
       <Tela>
-        <Cabecalho voltar="a trilha" titulo="Avaliação indisponível" />
+        <Cabecalho voltar="a trilha" destino="/trilha" titulo="Avaliação indisponível" />
         <ThemedText type="small">Este módulo ainda não tem avaliação.</ThemedText>
       </Tela>
     );
@@ -99,7 +101,7 @@ export default function QuizScreen() {
         total={questoes.length}
         rotulo={`Progresso na avaliação de ${modulo.titulo}`}
         rotuloSair="Sair da avaliação"
-        onSair={() => router.push({ pathname: '/modulo/[id]', params: { id: modulo.id } })}
+        onSair={() => router.dismissTo({ pathname: '/modulo/[id]', params: { id: modulo.id } })}
       />
 
       <Tela espaco={Spacing.two + Spacing.one}>
@@ -166,6 +168,7 @@ function Alternativa({
   onPress: () => void;
 }) {
   const theme = useTheme();
+  const ponteiro = useHover();
 
   const acertou = respondida && correta;
   const errou = respondida && selecionada && !correta;
@@ -185,6 +188,7 @@ function Alternativa({
       }
       disabled={respondida}
       onPress={onPress}
+      {...ponteiro.props}
       style={({ pressed }) => [
         styles.alternativa,
         {
@@ -199,6 +203,8 @@ function Alternativa({
         },
         acertou && { backgroundColor: theme.accentStrong },
         errou && { backgroundColor: theme.backgroundElement },
+        /* Depois de responder a alternativa vira leitura, e leitura não reage. */
+        ponteiro.hover && !respondida && { backgroundColor: theme.backgroundElement },
         pressed && !respondida && { backgroundColor: theme.backgroundSelected },
       ]}>
       <ThemedText type="smallBold" style={[styles.marca, { color: cor }]}>
@@ -260,12 +266,7 @@ function Resultado({
         <ThemedText type="kicker" style={{ color: theme.inverseMuted }}>
           Avaliação concluída
         </ThemedText>
-        <ThemedText
-          type="display"
-          accessibilityRole="header"
-          style={[styles.placarNumero, { color: theme.inverseOn }]}>
-          {percentual}%
-        </ThemedText>
+        <PlacarContado percentual={percentual} cor={theme.inverseOn} />
         {/* Aprovação por símbolo + texto, nunca só pela cor. */}
         <ThemedText type="rowTitle" style={{ color: theme.inverseOn }}>
           {aprovado ? `✓ Aprovado` : `✕ Abaixo dos ${PERCENTUAL_MINIMO}% necessários`}
@@ -340,6 +341,51 @@ function Resultado({
         </Button>
       </View>
     </Tela>
+  );
+}
+
+/**
+ * O placar sobe de zero até a nota em vez de já nascer nela.
+ *
+ * Fica em componente próprio de propósito: assim só ele repinta a cada quadro,
+ * e não a tela de resultado inteira, que carrega a faixa, a lista de erradas e
+ * três botões.
+ *
+ * O leitor de tela recebe a nota final de imediato pelo `accessibilityLabel` —
+ * ninguém deveria ouvir a contagem subindo.
+ */
+function PlacarContado({ percentual, cor }: { percentual: number; cor: string }) {
+  const reduzirMovimento = useReducedMotion();
+  const [mostrado, setMostrado] = useState(reduzirMovimento ? percentual : 0);
+
+  useEffect(() => {
+    if (reduzirMovimento) {
+      setMostrado(percentual);
+      return;
+    }
+
+    const inicio = Date.now();
+    let quadro: number;
+
+    const passo = () => {
+      const t = Math.min(1, (Date.now() - inicio) / Motion.valor.duration);
+      // Freia ao chegar: o número desacelera em vez de parar de supetão.
+      setMostrado(Math.round(percentual * (1 - (1 - t) ** 3)));
+      if (t < 1) quadro = requestAnimationFrame(passo);
+    };
+
+    quadro = requestAnimationFrame(passo);
+    return () => cancelAnimationFrame(quadro);
+  }, [percentual, reduzirMovimento]);
+
+  return (
+    <ThemedText
+      type="display"
+      accessibilityRole="header"
+      accessibilityLabel={`${percentual}%`}
+      style={[styles.placarNumero, { color: cor }]}>
+      {mostrado}%
+    </ThemedText>
   );
 }
 
