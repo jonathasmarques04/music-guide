@@ -10,7 +10,14 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npm install
    ```
 
-2. Start the app
+2. Configure o Supabase (login, cadastro e progresso do aluno)
+
+   O projeto Supabase já está criado e as chaves já estão em `.env.local`.
+   Veja [`supabase/README.md`](supabase/README.md) para o que existe lá e como
+   refazer do zero. Em outra máquina, copie `.env.example` para `.env.local` e
+   preencha — sem isso o app não abre, e ele avisa qual variável está faltando.
+
+3. Start the app
 
    ```bash
    npx expo start

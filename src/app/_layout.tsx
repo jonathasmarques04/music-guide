@@ -4,6 +4,8 @@ import * as SplashScreen from 'expo-splash-screen';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { LoginScreen } from '@/components/login-screen';
+import { RedefinirSenhaScreen } from '@/components/redefinir-senha-screen';
+import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
 import { AuthProvider, useAuth } from '@/contexts/auth';
 import { ProgressoProvider } from '@/contexts/progresso';
@@ -43,7 +45,21 @@ export default function RootLayout() {
 
 /** Enquanto não há sessão, o app inteiro fica atrás da tela de login. */
 function AuthGate() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, carregando, recuperandoSenha } = useAuth();
+
+  /**
+   * Restaurar a sessão salva é assíncrono. Sem esta espera, quem já está logado
+   * vê a tela de login piscar por um instante a cada abertura do app. O splash
+   * animado continua por cima, então a tela vazia não aparece.
+   */
+  if (carregando) {
+    return <ThemedView style={{ flex: 1 }} />;
+  }
+
+  /** Veio de um link de recuperação: trocar a senha vem antes de tudo. */
+  if (recuperandoSenha) {
+    return <RedefinirSenhaScreen />;
+  }
 
   if (!isAuthenticated) {
     return <LoginScreen />;

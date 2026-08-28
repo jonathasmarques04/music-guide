@@ -4,13 +4,39 @@
     Segoe UI Symbol, Noto Color Emoji;
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
-  --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
+  /*
+   * `system-ui` precisa vir antes das fontes japonesas: no Windows não existe
+   * face arredondada latina, e sem ele o texto latino cai em Meiryo/MS PGothic
+   * e sai com métricas de CJK (espaçamento irregular entre as letras).
+   */
+  --font-rounded:
+    'SF Pro Rounded', ui-rounded, 'Hiragino Maru Gothic ProN', system-ui, 'Segoe UI', sans-serif;
   --font-serif: Georgia, 'Times New Roman', serif;
 
-  /* Espelha `background` de constants/theme.ts. O app é sempre escuro. */
+  /*
+   * Espelham a paleta de constants/theme.ts. O app é sempre escuro.
+   * Só existem aqui porque `backdrop-filter` e `:focus-visible` não têm
+   * equivalente em React Native — todo o resto usa os tokens direto do TS.
+   * Ao mudar a paleta lá, mude aqui também.
+   */
   --color-background: #000000;
+  --color-background-element: #121016;
+  --color-background-selected: #1e1826;
+  --color-accent: #a78bfa;
 
   color-scheme: dark;
+}
+
+/*
+ * Anel de foco para navegação por teclado. No nativo não existe `:focus-visible`;
+ * na web ele é obrigatório (WCAG 2.4.7) e o padrão do navegador some sobre o
+ * fundo preto.
+ */
+[role='tab']:focus-visible,
+[role='button']:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /*

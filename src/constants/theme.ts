@@ -109,5 +109,11 @@ export const Spacing = {
 /** Altura mínima de alvo de toque (WCAG 2.5.5 / iOS HIG). */
 export const MinTouchTarget = 44;
 
-export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
+/**
+ * Espaço que a navegação inferior ocupa e o conteúdo precisa reservar no fim
+ * das rolagens. Na web a barra é uma ilha flutuante (`app-tabs.web.tsx`):
+ * 62px de altura mais os 24px que ela sobe do rodapé. Sem reservar isso, o
+ * último item da lista fica atrás dela.
+ */
+export const BottomTabInset = Platform.select({ ios: 50, android: 80, web: 88 }) ?? 0;
 export const MaxContentWidth = 800;

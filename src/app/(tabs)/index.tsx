@@ -13,8 +13,8 @@ import { useTheme } from '@/hooks/use-theme';
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const { session } = useAuth();
-  const { concluidos, totalAulas } = useProgresso();
+  const { session, signOut } = useAuth();
+  const { concluidos, totalAulas, erroSincronizacao } = useProgresso();
   const percentual = totalAulas === 0 ? 0 : Math.round((concluidos / totalAulas) * 100);
 
   return (
@@ -24,7 +24,7 @@ export default function DashboardScreen() {
           <View style={styles.content}>
             <View style={styles.header}>
               <ThemedText type="smallBold" themeColor="accent">MUSICA / ÁREA DO ALUNO</ThemedText>
-              <ThemedText type="subtitle" accessibilityRole="header">Olá, {session?.isGuest ? 'estudante' : session?.email?.split('@')[0] ?? 'estudante'}</ThemedText>
+              <ThemedText type="subtitle" accessibilityRole="header">Olá, {session?.nome ?? 'estudante'}</ThemedText>
               <ThemedText type="default" themeColor="textSecondary">
                 Seu próximo passo na teoria musical está pronto.
               </ThemedText>
@@ -58,6 +58,24 @@ export default function DashboardScreen() {
                 Modo visitante: seu progresso fica disponível enquanto esta sessão estiver aberta.
               </ThemedText>
             )}
+
+            {erroSincronizacao && (
+              <ThemedText type="small" themeColor="error">
+                ✕ Não foi possível sincronizar seu progresso: {erroSincronizacao} Ele continua salvo neste aparelho.
+              </ThemedText>
+            )}
+
+            <View style={styles.conta}>
+              <ThemedText type="small" themeColor="textMuted">
+                {session?.isGuest ? 'Sessão de visitante' : `Conectado como ${session?.email}`}
+              </ThemedText>
+              <Button
+                variant="ghost"
+                onPress={signOut}
+                accessibilityHint="Encerra a sessão e volta para a tela de login">
+                Sair da conta
+              </Button>
+            </View>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -88,4 +106,5 @@ const styles = StyleSheet.create({
   stats: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.four },
   stat: { flexGrow: 1, minWidth: 130, borderLeftWidth: 2, paddingLeft: Spacing.two, gap: Spacing.half },
   statValue: { fontSize: 28, lineHeight: 34 },
+  conta: { gap: Spacing.two, alignItems: 'flex-start' },
 });
