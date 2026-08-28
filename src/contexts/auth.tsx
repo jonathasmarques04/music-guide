@@ -17,6 +17,8 @@ export type Session = {
   email: string | null;
   /** Nome de exibição vindo de `public.perfis`. */
   nome: string;
+  /** Endereço da foto no bucket `avatares`; null para quem não subiu nenhuma. */
+  avatarUrl: string | null;
   /** true quando a sessão foi criada pelo bypass de desenvolvimento. */
   isGuest: boolean;
 };
@@ -57,6 +59,21 @@ type AuthValue = {
   reenviarConfirmacao: (email: string) => Promise<Resultado>;
   atualizarNome: (nome: string) => Promise<Resultado>;
   /**
+   * Envia a foto para o bucket `avatares` e grava o endereço no perfil.
+   * `uri` é o que o seletor de imagem devolve — arquivo local, não base64.
+   */
+  atualizarAvatar: (uri: string) => Promise<Resultado>;
+  /** Apaga a foto do bucket e limpa o endereço no perfil. */
+  removerAvatar: () => Promise<Resultado>;
+  /**
+   * Pede a troca de e-mail. O Supabase NÃO troca na hora: manda confirmação
+   * para o endereço novo (e, se `Secure email change` estiver ligado, também
+   * para o antigo). Só depois do clique a conta muda.
+   */
+  atualizarEmail: (email: string) => Promise<Resultado>;
+  /** Troca a senha da sessão aberta. */
+  atualizarSenha: (senha: string) => Promise<Resultado>;
+  /**
    * Falha ao abrir um link de e-mail (expirado, já usado ou recusado). Sem
    * isso o aluno clica num link velho, o app não faz nada e ele fica sem
    * entender por quê.
@@ -86,6 +103,7 @@ function urlDeRetorno() {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [sessaoSupabase, setSessaoSupabase] = useState<SessaoSupabase | null>(null);
   const [nome, setNome] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [visitante, setVisitante] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [recuperandoSenha, setRecuperandoSenha] = useState(false);
@@ -123,23 +141,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // --- Carrega o perfil (nome de exibição) da conta -------------------------
+  // --- Carrega o perfil (nome de exibição e foto) da conta ------------------
   useEffect(() => {
     if (!usuarioId) {
       setNome('');
+      setAvatarUrl(null);
       return;
     }
 
     let ativo = true;
 
-    supabase
-      .from('perfis')
-      .select('nome')
-      .eq('id', usuarioId)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (ativo && data?.nome) setNome(data.nome);
-      });
+    /*
+     * A foto é opcional NO BANCO, não só na tela: `avatar_url` só existe depois
+     * que `supabase/schema.sql` roda. Pedir a coluna direto faria o PostgREST
+     * recusar a consulta INTEIRA — e o nome, que nada tem a ver com foto,
+     * deixaria de carregar junto. Então: tenta com foto, e cai para só o nome
+     * se o banco ainda não tiver a coluna.
+     */
+    const carregar = async () => {
+      const comFoto = await supabase
+        .from('perfis')
+        .select('nome, avatar_url')
+        .eq('id', usuarioId)
+        .maybeSingle();
+
+      if (!ativo) return;
+
+      if (!comFoto.error) {
+        if (comFoto.data?.nome) setNome(comFoto.data.nome);
+        setAvatarUrl(comFoto.data?.avatar_url ?? null);
+        return;
+      }
+
+      const soNome = await supabase
+        .from('perfis')
+        .select('nome')
+        .eq('id', usuarioId)
+        .maybeSingle();
+
+      if (!ativo) return;
+
+      if (soNome.data?.nome) setNome(soNome.data.nome);
+      setAvatarUrl(null);
+    };
+
+    carregar();
 
     return () => {
       ativo = false;
@@ -196,12 +242,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const session: Session | null = visitante
-    ? { usuarioId: null, email: null, nome: 'estudante', isGuest: true }
+    ? { usuarioId: null, email: null, nome: 'estudante', avatarUrl: null, isGuest: true }
     : usuario
       ? {
           usuarioId: usuario.id,
           email: usuario.email ?? null,
           nome: nome || usuario.email?.split('@')[0] || 'estudante',
+          avatarUrl,
           isGuest: false,
         }
       : null;
@@ -298,6 +345,105 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { erro: null };
     },
 
+
+    /*
+     * A foto vai para `avatares/<uuid>/avatar.jpg`, sempre no mesmo caminho: a
+     * pasta é o que amarra o arquivo ao dono na política de RLS, e o nome fixo
+     * evita deixar avatares órfãos a cada troca.
+     *
+     * O endereço guardado leva `?v=<timestamp>` porque o bucket é público e
+     * servido por CDN — sem isso a foto nova continuaria mostrando a antiga até
+     * o cache expirar.
+     */
+    atualizarAvatar: async (uri) => {
+      if (!usuarioId) {
+        return { erro: 'Entre na sua conta para trocar a foto.' };
+      }
+
+      const caminho = `${usuarioId}/avatar.jpg`;
+
+      try {
+        const resposta = await fetch(uri);
+        const bytes = await resposta.arrayBuffer();
+
+        const { error: falhaUpload } = await supabase.storage
+          .from('avatares')
+          .upload(caminho, bytes, { contentType: 'image/jpeg', upsert: true });
+
+        if (falhaUpload) {
+          return { erro: mensagemDeErro(falhaUpload) };
+        }
+      } catch (falha) {
+        return { erro: mensagemDeErro(falha) };
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('avatares').getPublicUrl(caminho);
+
+      const endereco = `${publicUrl}?v=${Date.now()}`;
+
+      const { error } = await supabase
+        .from('perfis')
+        .update({ avatar_url: endereco })
+        .eq('id', usuarioId);
+
+      if (error) {
+        return { erro: mensagemDeErro(error) };
+      }
+
+      setAvatarUrl(endereco);
+      return { erro: null };
+    },
+
+    removerAvatar: async () => {
+      if (!usuarioId) {
+        return { erro: 'Entre na sua conta para mexer na foto.' };
+      }
+
+      // Some da tela mesmo que o arquivo resista: o que o app mostra é o
+      // `avatar_url`, então limpar a coluna é o que de fato remove a foto.
+      await supabase.storage.from('avatares').remove([`${usuarioId}/avatar.jpg`]);
+
+      const { error } = await supabase
+        .from('perfis')
+        .update({ avatar_url: null })
+        .eq('id', usuarioId);
+
+      if (error) {
+        return { erro: mensagemDeErro(error) };
+      }
+
+      setAvatarUrl(null);
+      return { erro: null };
+    },
+
+    /*
+     * Troca de e-mail é em DUAS etapas e isso precisa aparecer na tela: aqui só
+     * disparamos a confirmação. Enquanto o aluno não clicar no link, a conta
+     * continua no endereço antigo.
+     */
+    atualizarEmail: async (novoEmail) => {
+      if (!usuarioId) {
+        return { erro: 'Entre na sua conta para trocar o e-mail.' };
+      }
+
+      const { error } = await supabase.auth.updateUser(
+        { email: novoEmail.trim() },
+        { emailRedirectTo: urlDeRetorno() }
+      );
+
+      return { erro: error ? mensagemDeErro(error) : null };
+    },
+
+    atualizarSenha: async (senha) => {
+      if (!usuarioId) {
+        return { erro: 'Entre na sua conta para trocar a senha.' };
+      }
+
+      const { error } = await supabase.auth.updateUser({ password: senha });
+      return { erro: error ? mensagemDeErro(error) : null };
+    },
     signInAsGuest: () => setVisitante(true),
 
     signOut: async () => {

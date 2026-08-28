@@ -1,8 +1,8 @@
 /**
  * Tipos das tabelas do Supabase — espelham `supabase/schema.sql`.
  *
- * Escritos a mao para o projeto funcionar sem passo de codegen. Se voce mudar o
- * esquema, atualize aqui tambem (ou gere com
+ * Escritos à mão para o projeto funcionar sem passo de codegen. Se você mudar o
+ * esquema, atualize aqui também (ou gere com
  * `npx supabase gen types typescript --project-id <ref> > src/lib/database.types.ts`).
  */
 
@@ -14,6 +14,7 @@ export type Database = {
           id: string;
           nome: string;
           email: string | null;
+          avatar_url: string | null;
           criado_em: string;
           atualizado_em: string;
         };
@@ -21,6 +22,7 @@ export type Database = {
           id: string;
           nome?: string;
           email?: string | null;
+          avatar_url?: string | null;
           criado_em?: string;
           atualizado_em?: string;
         };
@@ -28,6 +30,7 @@ export type Database = {
           id?: string;
           nome?: string;
           email?: string | null;
+          avatar_url?: string | null;
           criado_em?: string;
           atualizado_em?: string;
         };

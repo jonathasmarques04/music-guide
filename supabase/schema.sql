@@ -11,8 +11,8 @@
 --     └─ public.perfis                 1:1  — nome de exibicao do aluno
 --     └─ public.progresso_modulos      1:N  — melhor nota por modulo da trilha
 --
--- Toda tabela tem RLS ligada: um aluno so enxerga e so escreve as proprias
--- linhas. A chave anon do app nao consegue ler dados de outro usuario.
+-- Toda tabela tem RLS ligada: um aluno só enxerga e só escreve as próprias
+-- linhas. A chave anon do app não consegue ler dados de outro usuário.
 -- =============================================================================
 
 
@@ -77,8 +77,8 @@ create trigger perfis_atualizado_em
 -- -----------------------------------------------------------------------------
 -- Cria o perfil no mesmo instante em que a conta nasce.
 --
--- `security definer` e obrigatorio aqui: o trigger roda no contexto do cadastro,
--- antes de existir uma sessao autenticada, entao a RLS de insert nao se aplica.
+-- `security definer` é obrigatório aqui: o trigger roda no contexto do cadastro,
+-- antes de existir uma sessão autenticada, então a RLS de insert não se aplica.
 -- -----------------------------------------------------------------------------
 create or replace function public.handle_new_user()
 returns trigger
@@ -90,7 +90,7 @@ begin
   insert into public.perfis (id, nome, email)
   values (
     new.id,
-    -- Nome vem do metadata enviado no signUp; sem ele, usa o usuario do e-mail.
+    -- Nome vem do metadata enviado no signUp; sem ele, usa o usuário do e-mail.
     coalesce(
       nullif(trim(new.raw_user_meta_data ->> 'nome'), ''),
       split_part(coalesce(new.email, ''), '@', 1)
@@ -164,10 +164,10 @@ create trigger progresso_modulos_atualizado_em
 -- registrar_nota — guarda APENAS a melhor nota.
 --
 -- A mesma regra do contexto `progresso` no app: refazer a avaliacao e ir pior
--- nunca derruba o progresso ja conquistado. Fica no banco (e nao so no cliente)
+-- nunca derruba o progresso já conquistado. Fica no banco (e não só no cliente)
 -- porque a regra precisa valer para qualquer origem de escrita.
 --
--- `security invoker` (padrao): a RLS acima continua valendo, entao um aluno nao
+-- `security invoker` (padrão): a RLS acima continua valendo, então um aluno não
 -- consegue gravar nota no id de outro. `auth.uid()` resolve o dono da linha.
 -- -----------------------------------------------------------------------------
 create or replace function public.registrar_nota(
@@ -185,3 +185,55 @@ as $$
     set aproveitamento = greatest(pm.aproveitamento, excluded.aproveitamento)
   returning pm.*;
 $$;
+
+-- =============================================================================
+-- 3. avatares — a foto de perfil do aluno
+--
+-- A imagem NÃO mora no Postgres: `perfis.avatar_url` guarda só o endereço, e o
+-- arquivo vai para o Storage. Trocar de foto passa a ser um upload, e não uma
+-- reescrita da linha do perfil.
+-- =============================================================================
+
+alter table public.perfis add column if not exists avatar_url text;
+
+comment on column public.perfis.avatar_url is
+  'Endereço público da foto no bucket `avatares`. Nulo = aluno sem foto.';
+
+-- Bucket público na LEITURA: um avatar não é segredo, e assim o app monta a
+-- imagem com a URL direta, sem assinar cada acesso. A escrita continua fechada
+-- pelas políticas abaixo.
+insert into storage.buckets (id, name, public)
+values ('avatares', 'avatares', true)
+on conflict (id) do update set public = true;
+
+-- O caminho do arquivo é `<uuid-do-aluno>/<nome>`, e é a PRIMEIRA pasta que
+-- amarra o arquivo ao dono. Sem isso qualquer aluno autenticado sobrescreveria
+-- o avatar de qualquer outro.
+drop policy if exists "avatares: qualquer um vê" on storage.objects;
+create policy "avatares: qualquer um vê"
+  on storage.objects for select
+  using (bucket_id = 'avatares');
+
+drop policy if exists "avatares: aluno envia o próprio" on storage.objects;
+create policy "avatares: aluno envia o próprio"
+  on storage.objects for insert to authenticated
+  with check (
+    bucket_id = 'avatares'
+    and (storage.foldername(name))[1] = (select auth.uid())::text
+  );
+
+drop policy if exists "avatares: aluno troca o próprio" on storage.objects;
+create policy "avatares: aluno troca o próprio"
+  on storage.objects for update to authenticated
+  using (
+    bucket_id = 'avatares'
+    and (storage.foldername(name))[1] = (select auth.uid())::text
+  );
+
+drop policy if exists "avatares: aluno apaga o próprio" on storage.objects;
+create policy "avatares: aluno apaga o próprio"
+  on storage.objects for delete to authenticated
+  using (
+    bucket_id = 'avatares'
+    and (storage.foldername(name))[1] = (select auth.uid())::text
+  );
