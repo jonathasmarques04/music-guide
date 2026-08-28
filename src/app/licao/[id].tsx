@@ -33,7 +33,7 @@ export default function LicaoScreen() {
   if (!modulo || modulo.secoes.length === 0) {
     return (
       <Tela>
-        <Cabecalho voltar="a trilha" titulo="Aula indisponível" />
+        <Cabecalho voltar="a trilha" destino="/trilha" titulo="Aula indisponível" />
         <ThemedText type="small">Este módulo ainda não tem conteúdo publicado.</ThemedText>
       </Tela>
     );
@@ -42,7 +42,7 @@ export default function LicaoScreen() {
   if (statusDe(modulo.id) === 'bloqueado') {
     return (
       <Tela>
-        <Cabecalho voltar="a trilha" kicker="Bloqueado" titulo={modulo.titulo} />
+        <Cabecalho voltar="a trilha" destino="/trilha" kicker="Bloqueado" titulo={modulo.titulo} />
         <Nota
           tom="aviso"
           rotulo="Ainda trancado"
@@ -57,7 +57,10 @@ export default function LicaoScreen() {
   const ultima = atual === modulo.secoes.length - 1;
   const temAvaliacao = quizPorModulo(modulo.id).length > 0;
 
-  const sair = () => router.push({ pathname: '/modulo/[id]', params: { id: modulo.id } });
+  // `dismissTo` e nao `push`: sair da aula tem de DESEMPILHAR o módulo de onde
+  // ela veio, senão a pilha vira módulo → aula → módulo e o voltar do cabeçalho
+  // cai de novo na aula.
+  const sair = () => router.dismissTo({ pathname: '/modulo/[id]', params: { id: modulo.id } });
 
   const avancar = () => {
     if (!ultima) {

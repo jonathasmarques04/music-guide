@@ -37,6 +37,7 @@ export default function TrilhaScreen() {
       <View style={styles.topo}>
         <Cabecalho
           voltar="o painel"
+          destino="/"
           kicker={`${MODULOS.length} módulos em ordem`}
           titulo="Trilha"
           regua={false}

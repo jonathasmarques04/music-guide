@@ -32,7 +32,7 @@ export default function ModuloScreen() {
   if (!modulo) {
     return (
       <Tela>
-        <Cabecalho voltar="a trilha" titulo="Módulo não encontrado" />
+        <Cabecalho voltar="a trilha" destino="/trilha" titulo="Módulo não encontrado" />
         <ThemedText type="small">Esse endereço não corresponde a nenhum módulo da trilha.</ThemedText>
       </Tela>
     );
@@ -43,7 +43,7 @@ export default function ModuloScreen() {
   if (status === 'bloqueado') {
     return (
       <Tela>
-        <Cabecalho voltar="a trilha" kicker="Bloqueado" titulo={modulo.titulo} />
+        <Cabecalho voltar="a trilha" destino="/trilha" kicker="Bloqueado" titulo={modulo.titulo} />
         <Nota
           tom="aviso"
           rotulo="Ainda trancado"
@@ -66,6 +66,7 @@ export default function ModuloScreen() {
     <Tela>
       <Cabecalho
         voltar="a trilha"
+        destino="/trilha"
         kicker={`Módulo ${String(modulo.numero).padStart(2, '0')}`}
         titulo={modulo.titulo}
         regua={false}

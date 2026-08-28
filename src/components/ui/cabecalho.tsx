@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useRouter, type Href } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -12,6 +12,17 @@ export type CabecalhoProps = {
   kicker?: string;
   /** Nome da tela anterior — vira o rótulo do voltar ("← Trilha"). */
   voltar?: string;
+  /**
+   * Para onde o voltar leva — o destino que `voltar` nomeia.
+   *
+   * O rótulo promete um lugar, então a ação vai a esse lugar em vez de
+   * desempilhar o histórico. Sem isso o voltar mente: quem chega ao módulo
+   * saindo da aula tem a aula no topo da pilha, e um `back()` cego reabriria
+   * justamente a aula. `dismissTo` volta ao destino quando ele já está na
+   * pilha e o substitui quando não está — nos dois casos sem empilhar mais
+   * uma tela.
+   */
+  destino?: Href;
   /** Régua de 2px fechando o cabeçalho. */
   regua?: boolean;
   /** Ação à direita do título (um botão de texto, normalmente). */
@@ -23,7 +34,7 @@ export type CabecalhoProps = {
  * régua que separa o cabeçalho do conteúdo. Tudo alinhado no mesmo eixo — o
  * sistema não centraliza nada.
  */
-export function Cabecalho({ titulo, kicker, voltar, regua = true, acao }: CabecalhoProps) {
+export function Cabecalho({ titulo, kicker, voltar, destino, regua = true, acao }: CabecalhoProps) {
   const router = useRouter();
 
   return (
@@ -33,7 +44,13 @@ export function Cabecalho({ titulo, kicker, voltar, regua = true, acao }: Cabeca
           variant="ghost"
           size="sm"
           accessibilityHint={`Volta para ${voltar}`}
-          onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}>
+          onPress={() =>
+            destino
+              ? router.dismissTo(destino)
+              : router.canGoBack()
+                ? router.back()
+                : router.replace('/')
+          }>
           {`← ${voltar}`}
         </Button>
       )}
