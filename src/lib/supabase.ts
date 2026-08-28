@@ -1,10 +1,10 @@
 /**
- * Cliente unico do Supabase (auth + banco).
+ * Cliente único do Supabase (auth + banco).
  *
- * Configuracao: copie `.env.example` para `.env.local` e preencha as duas
- * variaveis. Elas usam o prefixo `EXPO_PUBLIC_` porque precisam ir para o
- * bundle do app — o que e seguro para a chave *anon*: ela e publica por
- * definicao e quem protege os dados e a RLS declarada em `supabase/schema.sql`.
+ * Configuração: copie `.env.example` para `.env.local` e preencha as duas
+ * variáveis. Elas usam o prefixo `EXPO_PUBLIC_` porque precisam ir para o
+ * bundle do app — o que é seguro para a chave *anon*: ela é pública por
+ * definição, e quem protege os dados é a RLS declarada em `supabase/schema.sql`.
  * NUNCA coloque aqui a `service_role`.
  */
 
@@ -19,7 +19,7 @@ const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error(
-    'Supabase nao configurado. Copie `.env.example` para `.env.local`, preencha ' +
+    'Supabase não configurado. Copie `.env.example` para `.env.local`, preencha ' +
       'EXPO_PUBLIC_SUPABASE_URL e EXPO_PUBLIC_SUPABASE_ANON_KEY (Dashboard > Project Settings > API) ' +
       'e reinicie o servidor com `npx expo start --clear`.'
   );
@@ -28,21 +28,21 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     /**
-     * No nativo a sessao mora no AsyncStorage — sem isso o login se perde a
+     * No nativo a sessão mora no AsyncStorage — sem isso o login se perde a
      * cada abertura do app.
      *
      * Na web, deixamos o SDK escolher: no navegador ele usa o localStorage e,
      * no prerender do `expo export` (que roda em Node, sem `window`), ele cai
-     * sozinho para memoria. Passar o AsyncStorage tambem na web quebra esse
+     * sozinho para memória. Passar o AsyncStorage também na web quebra esse
      * prerender, porque o adaptador web dele acessa `window` direto.
      */
     storage: Platform.OS === 'web' ? undefined : AsyncStorage,
     persistSession: true,
     autoRefreshToken: true,
     /**
-     * PKCE: os links de e-mail (confirmacao e recuperacao de senha) voltam com
-     * `?code=`, que trocamos por sessao. Na web o proprio SDK le a URL; no
-     * nativo isso e feito no contexto de auth, a partir do deep link.
+     * PKCE: os links de e-mail (confirmação e recuperação de senha) voltam com
+     * `?code=`, que trocamos por sessão. Na web o próprio SDK lê a URL; no
+     * nativo isso é feito no contexto de auth, a partir do deep link.
      */
     flowType: 'pkce',
     detectSessionInUrl: Platform.OS === 'web',
@@ -50,9 +50,9 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
 });
 
 /**
- * O token de acesso expira em ~1h. Enquanto o app esta em primeiro plano o SDK
- * renova sozinho; em segundo plano o timer e suspenso pelo SO, entao paramos e
- * retomamos junto com o ciclo de vida do app. Na web isso nao se aplica.
+ * O token de acesso expira em ~1h. Enquanto o app está em primeiro plano o SDK
+ * renova sozinho; em segundo plano o timer é suspenso pelo SO, então paramos e
+ * retomamos junto com o ciclo de vida do app. Na web isso não se aplica.
  */
 if (Platform.OS !== 'web') {
   AppState.addEventListener('change', (estado) => {

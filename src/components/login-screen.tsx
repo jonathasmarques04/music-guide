@@ -131,7 +131,7 @@ export function LoginScreen() {
       if (falha) {
         setErro(falha);
       } else {
-        // Resposta igual existindo a conta ou não: não entregamos quem tem cadastro.
+        // A resposta é a mesma, exista a conta ou não: não entregamos quem tem cadastro.
         setAviso(`Se existir uma conta para ${email.trim()}, o link de recuperação já está a caminho.`);
       }
     }
@@ -179,7 +179,7 @@ export function LoginScreen() {
 
         {modo === 'recuperar' && (
           <ThemedText type="default" themeColor="textSecondary">
-            Informe seu e-mail e enviamos um link para você definir uma nova senha.
+            Informe seu e-mail e enviaremos um link para você definir uma nova senha.
           </ThemedText>
         )}
 

@@ -72,13 +72,13 @@ export const FLASHCARDS: Record<string, Flashcard[]> = {
     { frente: 'Menor melódica — alteração', verso: 'Eleva o 6º e o 7º graus. Em Lá: Lá–Si–Dó–Ré–Mi–Fá♯–Sol♯.' },
     { frente: 'Por que a menor harmônica existe?', verso: 'Para criar um dominante forte (V7) no tom menor — a menor natural tem V menor, sem trítono.' },
     { frente: 'V grau de Lá menor harmônica', verso: 'E maior (Mi–Sol♯–Si), ou E7 como tétrade.' },
-    { frente: 'Campo harmônico menor harmônico', verso: 'i – ii° – III+ – iv – V – VI – vii°' },
+    { frente: 'Campo harmônico da menor harmônica', verso: 'i – ii° – III+ – iv – V – VI – vii°' },
   ],
 
   cadencias: [
     { frente: 'Cadência perfeita', verso: 'V → I, com a tônica na fundamental e no baixo. G7 → C. Conclusão total.' },
     { frente: 'Cadência plagal', verso: 'IV → I. F → C. A "cadência do amém": suave, sem trítono.' },
-    { frente: 'Cadência deceptiva', verso: 'V → vi. G7 → Am. Quebra a expectativa de resolução de propósito.' },
+    { frente: 'Cadência deceptiva', verso: 'V → vi. G7 → Am. Quebra de propósito a expectativa de resolução.' },
     { frente: 'Meia cadência', verso: 'Qualquer progressão que termina no V. Cria suspense — é a vírgula da música.' },
     { frente: 'O que torna uma cadência imperfeita?', verso: 'V → I enfraquecido: tônica invertida, dominante sem sétima ou melodia que não termina na tônica.' },
   ],

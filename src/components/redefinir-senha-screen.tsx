@@ -72,7 +72,7 @@ export function RedefinirSenhaScreen() {
           onChangeText={setSenha}
           placeholder={`Pelo menos ${MINIMO_SENHA} caracteres`}
           invalido={curta}
-          ajuda={curta ? `Faltam ${MINIMO_SENHA - senha.length} caractere(s).` : undefined}
+          ajuda={curta ? faltamCaracteres(MINIMO_SENHA - senha.length) : undefined}
           secureTextEntry
           autoComplete="new-password"
           autoCapitalize="none"
@@ -120,6 +120,11 @@ export function RedefinirSenhaScreen() {
       </Tela>
     </KeyboardAvoidingView>
   );
+}
+
+/** Concordância certa no singular: "Falta 1 caractere", "Faltam 2 caracteres". */
+function faltamCaracteres(quantos: number) {
+  return quantos === 1 ? 'Falta 1 caractere.' : `Faltam ${quantos} caracteres.`;
 }
 
 /** Cada exigência com o próprio ✓ ou —, para o aluno ver o que ainda falta. */
