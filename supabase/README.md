@@ -19,6 +19,19 @@ npx expo start --clear
 
 ---
 
+## Conferir o que está aplicado
+
+```bash
+npm run supabase
+```
+
+Lê o `.env.local`, bate no projeto real e lista o que falta, por seção do
+`schema.sql`. Só leitura, só com a chave publicável. Vale rodar depois de
+mexer no schema e ao clonar o projeto numa máquina nova — foi o que pegou a
+seção 3 (avatares) faltando no banco enquanto o código já a usava.
+
+---
+
 ## O que já foi aplicado
 
 - **Tabelas `perfis` e `progresso_modulos`**, com RLS ligada e 3 e 4 políticas

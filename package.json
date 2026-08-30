@@ -43,7 +43,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "contraste": "node scripts/verifica-contraste.js"
+    "contraste": "node scripts/verifica-contraste.js",
+    "supabase": "node scripts/verifica-supabase.js"
   },
   "private": true
 }

@@ -47,6 +47,10 @@ Implicações práticas ao escrever código aqui:
   (texto), `accentStrong` (preenchimento de controle com rótulo pequeno) e
   `accentDisplay` (pôster e réguas). Trocar um pelo outro quebra o WCAG AA sem
   parecer errado na tela — a tabela no topo de `theme.ts` diz qual vai onde.
+- O `supabase/schema.sql` mora no git, mas o banco mora na nuvem: as duas coisas
+  saem de sincronia em silêncio. Depois de mexer no schema — ou ao pegar o
+  projeto numa máquina nova — rode `npm run supabase`, que confere contra o
+  projeto real e diz qual seção falta aplicar.
 - Ao mexer em cor, rode `npm run contraste`: ele lê os hex de `theme.ts` e
   confere todos os pares nos dois esquemas. Par novo na interface, linha nova
   na lista de `scripts/verifica-contraste.js`.
@@ -67,6 +71,7 @@ npm run android    # expo start --android
 npm run web        # expo start --web
 npx tsc --noEmit   # type-check
 npm run contraste  # confere o contraste do tema nos dois esquemas
+npm run supabase   # confere se o banco real tem o que schema.sql promete
 npx expo-doctor    # diagnóstico do projeto
 ```
 
