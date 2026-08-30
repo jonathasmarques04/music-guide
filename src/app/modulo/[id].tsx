@@ -16,6 +16,7 @@ import { NOTA_MINIMA } from '@/content/tipos';
 import { MinTouchTarget, Radius, Rules, Spacing } from '@/constants/theme';
 import { useProgresso } from '@/contexts/progresso';
 import { useRevisao } from '@/contexts/revisao';
+import { useHover } from '@/hooks/use-hover';
 import { useTheme } from '@/hooks/use-theme';
 
 const PERCENTUAL_MINIMO = Math.round(NOTA_MINIMA * 100);
@@ -26,6 +27,7 @@ export default function ModuloScreen() {
   const theme = useTheme();
   const { statusDe, notaDe } = useProgresso();
   const { resumoDoModulo } = useRevisao();
+  const ponteiroAvaliacao = useHover();
 
   const modulo = moduloPorId(id);
 
@@ -126,7 +128,32 @@ export default function ModuloScreen() {
       </View>
 
       {questoes > 0 && (
-        <View style={[styles.caixa, styles.caixaForte, { borderColor: theme.text }]}>
+        /*
+         * A caixa INTEIRA é o controle, e não a etiqueta: "Pendente" e "✓ 80%"
+         * são estado, e estado que vira botão deixa de ser lido como estado. O
+         * alvo grande também é o que dá os 44pt sem inchar a etiqueta de 11px.
+         */
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            status === 'concluido'
+              ? `Avaliação do módulo, concluída com ${Math.round((nota ?? 0) * 100)}%`
+              : 'Avaliação do módulo, pendente'
+          }
+          accessibilityHint={
+            status === 'concluido'
+              ? `Refaz a avaliação de ${modulo.titulo}`
+              : `Inicia a avaliação com ${questoes} ${questoes === 1 ? 'questão' : 'questões'}`
+          }
+          onPress={() => router.push({ pathname: '/quiz/[id]', params: { id: modulo.id } })}
+          {...ponteiroAvaliacao.props}
+          style={({ pressed }) => [
+            styles.caixa,
+            styles.caixaForte,
+            { borderColor: theme.text },
+            ponteiroAvaliacao.hover && { backgroundColor: theme.backgroundElement },
+            pressed && { backgroundColor: theme.backgroundSelected },
+          ]}>
           <View style={styles.caixaTexto}>
             <ThemedText type="rowTitle">Avaliação do módulo</ThemedText>
             <ThemedText type="small">
@@ -138,7 +165,11 @@ export default function ModuloScreen() {
           ) : (
             <Tag variant="outline">Pendente</Tag>
           )}
-        </View>
+          {/* A seta é o que promete destino — a mesma dos passos e de LinhaLista. */}
+          <ThemedText type="rowTitle" themeColor="textMuted">
+            ›
+          </ThemedText>
+        </Pressable>
       )}
 
       {cards > 0 && (
