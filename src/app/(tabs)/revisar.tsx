@@ -9,10 +9,12 @@ import { Tela } from '@/components/ui/tela';
 import { flashcardsPorModulo } from '@/content/flashcards';
 import { MODULOS } from '@/content/modulos';
 import { tempoAte } from '@/content/repeticao';
+import type { Modulo } from '@/content/tipos';
 import { MinTouchTarget, Rules, Spacing } from '@/constants/theme';
 import { useProgresso } from '@/contexts/progresso';
-import { useRevisao } from '@/contexts/revisao';
+import { useRevisao, type ResumoModulo } from '@/contexts/revisao';
 import { useTheme } from '@/hooks/use-theme';
+import { doisDigitos } from '@/lib/formato';
 
 /**
  * O hub de revisão: um baralho por módulo, com quantos cards estão esperando.
@@ -31,7 +33,7 @@ export default function RevisarScreen() {
   })).filter(({ modulo }) => flashcardsPorModulo(modulo.id).length > 0);
 
   const abertos = baralhos.filter((b) => !b.bloqueado);
-  const naFila = abertos.reduce((soma, b) => soma + b.resumo.vencidos + b.resumo.novos, 0);
+  const naFila = abertos.reduce((soma, b) => soma + b.resumo.pendentes, 0);
   const total = abertos.reduce((soma, b) => soma + b.resumo.total, 0);
 
   return (
@@ -58,56 +60,41 @@ export default function RevisarScreen() {
       <Regua />
 
       {baralhos.map(({ modulo, resumo, bloqueado }) => (
-        <LinhaBaralho
-          key={modulo.id}
-          id={modulo.id}
-          numero={modulo.numero}
-          titulo={modulo.titulo}
-          total={resumo.total}
-          pendentes={resumo.vencidos + resumo.novos}
-          proxima={resumo.proximaRevisao}
-          bloqueado={bloqueado}
-        />
+        <LinhaBaralho key={modulo.id} modulo={modulo} resumo={resumo} bloqueado={bloqueado} />
       ))}
     </Tela>
   );
 }
 
 function LinhaBaralho({
-  id,
-  numero,
-  titulo,
-  total,
-  pendentes,
-  proxima,
+  modulo,
+  resumo,
   bloqueado,
 }: {
-  id: string;
-  numero: number;
-  titulo: string;
-  total: number;
-  pendentes: number;
-  proxima?: number;
+  modulo: Modulo;
+  resumo: ResumoModulo;
   bloqueado: boolean;
 }) {
   const theme = useTheme();
   const router = useRouter();
 
+  const { total, pendentes, proximaRevisao } = resumo;
+
   const detalhe = bloqueado
     ? 'Conclua o módulo anterior para liberar'
     : pendentes > 0
       ? `${pendentes} de ${total} ${pendentes === 1 ? 'card espera' : 'cards esperam'}`
-      : proxima
-        ? `Em dia — o próximo volta em ${tempoAte(proxima)}`
+      : proximaRevisao
+        ? `Em dia — o próximo volta em ${tempoAte(proximaRevisao)}`
         : `${total} cards, todos em dia`;
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Baralho do módulo ${numero}: ${titulo}. ${detalhe}.`}
+      accessibilityLabel={`Baralho do módulo ${modulo.numero}: ${modulo.titulo}. ${detalhe}.`}
       accessibilityState={{ disabled: bloqueado }}
       disabled={bloqueado}
-      onPress={() => router.push({ pathname: '/flashcards/[id]', params: { id } })}
+      onPress={() => router.push({ pathname: '/flashcards/[id]', params: { id: modulo.id } })}
       style={({ pressed }) => [
         styles.linha,
         { borderBottomColor: theme.hairline },
@@ -116,12 +103,12 @@ function LinhaBaralho({
       ]}>
       <View style={[styles.numero, { borderRightColor: theme.hairline }]}>
         <ThemedText type="rowTitle" style={styles.numeroTexto}>
-          {String(numero).padStart(2, '0')}
+          {doisDigitos(modulo.numero)}
         </ThemedText>
       </View>
 
       <View style={styles.corpo}>
-        <ThemedText type="rowTitle">{titulo}</ThemedText>
+        <ThemedText type="rowTitle">{modulo.titulo}</ThemedText>
         <ThemedText type="small">{detalhe}</ThemedText>
       </View>
 

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedView } from '@/components/themed-view';
@@ -17,8 +17,8 @@ type TelaProps = {
    * borda, com as réguas atravessando a tela de ponta a ponta.
    */
   semMargem?: boolean;
+  /** Espaço entre os blocos da coluna. */
   espaco?: number;
-  style?: ViewStyle;
 };
 
 /**
@@ -33,18 +33,9 @@ export function Tela({
   rolar = true,
   semMargem = false,
   espaco = Spacing.three,
-  style,
 }: TelaProps) {
   const corpo = (
-    <View
-      style={[
-        styles.coluna,
-        { gap: espaco },
-        !semMargem && styles.comMargem,
-        style,
-      ]}>
-      {children}
-    </View>
+    <View style={[styles.coluna, { gap: espaco }, !semMargem && styles.comMargem]}>{children}</View>
   );
 
   return (

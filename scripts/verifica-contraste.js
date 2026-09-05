@@ -72,8 +72,6 @@ const pares = (p) => [
   [3.0, 'border / backgroundElement', p.border, p.backgroundElement],
   [4.5, 'inverseOn / inverse (bloco invertido)', p.inverseOn, p.inverse],
   [4.5, 'inverseMuted / inverse (kicker dentro do bloco)', p.inverseMuted, p.inverse],
-  [4.5, 'success / successSurface', p.success, p.successSurface],
-  [4.5, 'error / errorSurface', p.error, p.errorSurface],
 ];
 
 let falhas = 0;

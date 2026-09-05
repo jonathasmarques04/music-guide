@@ -22,10 +22,6 @@ export type EstadoCard = {
   intervaloMinutos: number;
   /** Quando o card volta a aparecer (timestamp em ms). */
   proximaRevisao: number;
-  /** Quantas vezes o card foi esquecido. */
-  lapsos: number;
-  /** Total de revisões feitas. */
-  revisoes: number;
 };
 
 const MINUTOS_POR_DIA = 1440;
@@ -46,7 +42,7 @@ const AJUSTE_FACILIDADE: Record<Avaliacao, number> = {
   facil: 0.15,
 };
 
-export const FACILIDADE_INICIAL = 2.5;
+const FACILIDADE_INICIAL = 2.5;
 const FACILIDADE_MIN = 1.3;
 const FACILIDADE_MAX = 2.8;
 
@@ -54,14 +50,12 @@ const FACILIDADE_MAX = 2.8;
 const INTERVALO_MAX = 180 * MINUTOS_POR_DIA;
 
 /** Um card que nunca foi revisado. */
-export function estadoInicial(agora = Date.now()): EstadoCard {
+function estadoInicial(agora = Date.now()): EstadoCard {
   return {
     repeticoes: 0,
     facilidade: FACILIDADE_INICIAL,
     intervaloMinutos: 0,
     proximaRevisao: agora,
-    lapsos: 0,
-    revisoes: 0,
   };
 }
 
@@ -120,8 +114,6 @@ export function revisar(
     facilidade,
     intervaloMinutos: intervalo,
     proximaRevisao: agora + intervalo * 60_000,
-    lapsos: estado.lapsos + (avaliacao === 'errei' ? 1 : 0),
-    revisoes: estado.revisoes + 1,
   };
 }
 

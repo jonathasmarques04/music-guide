@@ -56,8 +56,12 @@ Implicações práticas ao escrever código aqui:
   na lista de `scripts/verifica-contraste.js`.
 - Os componentes do sistema ficam em `src/components/ui/` (`Tela`, `Cabecalho`,
   `Button`, `Campo`, `Seg`, `Tag`, `Regua`, `Nota`, `Faixa`, `Barra*`,
-  `LinhaModulo`, `LinhaLista`). Monte tela com eles em vez de repetir
-  `StyleSheet` equivalente.
+  `LinhaModulo`, `LinhaLista`, `BracoCompacto`). Monte tela com eles em vez de
+  repetir `StyleSheet` equivalente.
+- O que aparece em mais de uma tela mora em `src/lib/`: `formato.ts`
+  (`doisDigitos`, `percentual`, `iniciais`) e `credenciais.ts` (`MINIMO_SENHA`,
+  `emailValido`, `faltamCaracteres`). Duas telas que formatam o mesmo número de
+  jeitos diferentes é bug visível ao aluno — use os helpers em vez de recriar.
 - `experiments` ligados no `app.json`: **typedRoutes** (rotas tipadas — links
   inválidos viram erro de tipo) e **reactCompiler** (não adicione `useMemo` /
   `useCallback` só por performance; o compilador cuida disso).
@@ -79,8 +83,9 @@ npx expo-doctor    # diagnóstico do projeto
 
 - `expo-env.d.ts` é **gerado** (e está no `.gitignore`). Ele traz
   `/// <reference types="expo/types" />`, que declara os imports de CSS
-  (`global.css`, `*.module.css`). Sem esse arquivo o `tsc` acusa
-  "Cannot find module ... .css" — recrie-o em vez de mexer nos imports.
+  (`global.css` e, se algum dia voltar a existir, `*.module.css`). Sem esse
+  arquivo o `tsc` acusa "Cannot find module ... .css" — recrie-o em vez de
+  mexer nos imports.
 - `npm run lint` (`expo lint`) ainda **não está configurado**: não há `eslint`
   instalado nem `eslint.config.js`. A primeira execução de `npx expo lint`
   instala e configura.

@@ -80,13 +80,6 @@ const claro = {
   /** Superfície tingida de destaque (tag, aviso). Use `accent` como texto nela. */
   accentSurface: '#fff2ef',
 
-  /** Acerto — o destaque. Sempre acompanhado de ✓ e de rótulo em texto. */
-  success: '#ae1800',
-  successSurface: '#fff2ef',
-  /** Erro — a tinta neutra, com régua de destaque à esquerda. Sempre com ✕. */
-  error: '#201e1d',
-  errorSurface: '#eae9e9',
-
   /** Contorno de controle (campo, botão secundário). Cumpre 3:1. */
   border: '#7d7b7b',
   /** Régua estrutural de 2px entre seções. Decorativa. */
@@ -127,11 +120,6 @@ const escuro = {
   /** No escuro o rótulo por cima do preenchimento é a TINTA, não o bone. */
   accentOn: '#201e1d',
   accentSurface: '#4d170e',
-
-  success: '#ff9783',
-  successSurface: '#4d170e',
-  error: '#f3f2f2',
-  errorSurface: '#2d2b2b',
 
   border: '#7d7979',
   divider: '#747372',

@@ -21,7 +21,6 @@ import { useTheme } from '@/hooks/use-theme';
  * | `kicker`    | 600  | 10      | versalete de destaque, acima do título    |
  * | `label`     | 600  | 11      | versalete neutro, rotulando um bloco      |
  * | `code`      | 400  | 14      | cifra, fórmula e grade de notas           |
- * | `link`      | 600  | 14      | rótulo de ação em texto                   |
  *
  * `kicker` e `label` já vêm coloridos (destaque e neutro) porque é assim que
  * eles existem no sistema; qualquer outro tipo herda `text` e aceita
@@ -39,8 +38,7 @@ export type TipoTexto =
   | 'smallBold'
   | 'kicker'
   | 'label'
-  | 'code'
-  | 'link';
+  | 'code';
 
 export type ThemedTextProps = TextProps & {
   type?: TipoTexto;
@@ -52,7 +50,6 @@ const CorDoTipo: Partial<Record<TipoTexto, ThemeColor>> = {
   kicker: 'accent',
   label: 'textMuted',
   small: 'textSecondary',
-  link: 'accent',
 };
 
 export function ThemedText({ style, type = 'default', themeColor, ...rest }: ThemedTextProps) {
@@ -147,11 +144,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 14,
     lineHeight: 21,
-  },
-  link: {
-    fontFamily: Fonts.semibold,
-    fontWeight: '600',
-    fontSize: 14,
-    lineHeight: 18,
   },
 });

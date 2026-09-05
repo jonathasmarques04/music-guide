@@ -100,6 +100,11 @@ function urlDeRetorno() {
   return Linking.createURL('/');
 }
 
+/** Empacota o `error` do SDK no formato que a tela espera. */
+function resultado(erro: unknown): Resultado {
+  return { erro: erro ? mensagemDeErro(erro) : null };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [sessaoSupabase, setSessaoSupabase] = useState<SessaoSupabase | null>(null);
   const [nome, setNome] = useState('');
@@ -111,6 +116,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const usuario = sessaoSupabase?.user ?? null;
   const usuarioId = usuario?.id ?? null;
+
+  /**
+   * A recusa das operações que exigem conta de verdade: no modo visitante não
+   * há linha em `public.perfis` para atualizar, nem pasta no bucket.
+   */
+  const exigeConta = (acao: string): Resultado => ({
+    erro: `Entre na sua conta para ${acao}.`,
+  });
 
   // --- Restaura a sessão salva e acompanha as mudanças ----------------------
   useEffect(() => {
@@ -269,7 +282,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       return {
-        erro: error ? mensagemDeErro(error) : null,
+        ...resultado(error),
         precisaConfirmarEmail: codigoDoErro(error) === 'email_not_confirmed',
       };
     },
@@ -287,7 +300,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (error) {
-        return { erro: mensagemDeErro(error), precisaConfirmarEmail: false };
+        return { ...resultado(error), precisaConfirmarEmail: false };
       }
 
       // Com confirmação de e-mail ligada, o Supabase não acusa e-mail repetido
@@ -307,17 +320,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: urlDeRetorno(),
       });
-      return { erro: error ? mensagemDeErro(error) : null };
+      return resultado(error);
     },
 
     definirNovaSenha: async (senha) => {
       const { error } = await supabase.auth.updateUser({ password: senha });
       if (error) {
-        return { erro: mensagemDeErro(error) };
+        return resultado(error);
       }
 
       setRecuperandoSenha(false);
-      return { erro: null };
+      return resultado(null);
     },
 
     reenviarConfirmacao: async (email) => {
@@ -326,23 +339,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: email.trim(),
         options: { emailRedirectTo: urlDeRetorno() },
       });
-      return { erro: error ? mensagemDeErro(error) : null };
+      return resultado(error);
     },
 
     atualizarNome: async (novoNome) => {
-      if (!usuarioId) {
-        return { erro: 'Entre na sua conta para mudar seu nome.' };
-      }
+      if (!usuarioId) return exigeConta('mudar seu nome');
 
       const limpo = novoNome.trim();
       const { error } = await supabase.from('perfis').update({ nome: limpo }).eq('id', usuarioId);
 
       if (error) {
-        return { erro: mensagemDeErro(error) };
+        return resultado(error);
       }
 
       setNome(limpo);
-      return { erro: null };
+      return resultado(null);
     },
 
 
@@ -356,9 +367,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
      * o cache expirar.
      */
     atualizarAvatar: async (uri) => {
-      if (!usuarioId) {
-        return { erro: 'Entre na sua conta para trocar a foto.' };
-      }
+      if (!usuarioId) return exigeConta('trocar a foto');
 
       const caminho = `${usuarioId}/avatar.jpg`;
 
@@ -371,10 +380,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .upload(caminho, bytes, { contentType: 'image/jpeg', upsert: true });
 
         if (falhaUpload) {
-          return { erro: mensagemDeErro(falhaUpload) };
+          return resultado(falhaUpload);
         }
       } catch (falha) {
-        return { erro: mensagemDeErro(falha) };
+        return resultado(falha);
       }
 
       const {
@@ -389,17 +398,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('id', usuarioId);
 
       if (error) {
-        return { erro: mensagemDeErro(error) };
+        return resultado(error);
       }
 
       setAvatarUrl(endereco);
-      return { erro: null };
+      return resultado(null);
     },
 
     removerAvatar: async () => {
-      if (!usuarioId) {
-        return { erro: 'Entre na sua conta para mexer na foto.' };
-      }
+      if (!usuarioId) return exigeConta('mexer na foto');
 
       // Some da tela mesmo que o arquivo resista: o que o app mostra é o
       // `avatar_url`, então limpar a coluna é o que de fato remove a foto.
@@ -411,11 +418,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('id', usuarioId);
 
       if (error) {
-        return { erro: mensagemDeErro(error) };
+        return resultado(error);
       }
 
       setAvatarUrl(null);
-      return { erro: null };
+      return resultado(null);
     },
 
     /*
@@ -424,26 +431,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
      * continua no endereço antigo.
      */
     atualizarEmail: async (novoEmail) => {
-      if (!usuarioId) {
-        return { erro: 'Entre na sua conta para trocar o e-mail.' };
-      }
+      if (!usuarioId) return exigeConta('trocar o e-mail');
 
       const { error } = await supabase.auth.updateUser(
         { email: novoEmail.trim() },
         { emailRedirectTo: urlDeRetorno() }
       );
 
-      return { erro: error ? mensagemDeErro(error) : null };
+      return resultado(error);
     },
 
     atualizarSenha: async (senha) => {
-      if (!usuarioId) {
-        return { erro: 'Entre na sua conta para trocar a senha.' };
-      }
+      if (!usuarioId) return exigeConta('trocar a senha');
 
       const { error } = await supabase.auth.updateUser({ password: senha });
-      return { erro: error ? mensagemDeErro(error) : null };
+      return resultado(error);
     },
+
     signInAsGuest: () => setVisitante(true),
 
     signOut: async () => {

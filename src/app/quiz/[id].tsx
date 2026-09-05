@@ -12,13 +12,12 @@ import { Regua } from '@/components/ui/regua';
 import { Tela } from '@/components/ui/tela';
 import { MODULOS, moduloPorId } from '@/content/modulos';
 import { quizPorModulo } from '@/content/quiz';
-import { NOTA_MINIMA, type Questao } from '@/content/tipos';
+import { NOTA_MINIMA, PERCENTUAL_MINIMO, type Questao } from '@/content/tipos';
 import { MinTouchTarget, Motion, Radius, Rules, Spacing } from '@/constants/theme';
 import { useProgresso } from '@/contexts/progresso';
 import { useHover } from '@/hooks/use-hover';
 import { useTheme } from '@/hooks/use-theme';
-
-const PERCENTUAL_MINIMO = Math.round(NOTA_MINIMA * 100);
+import { doisDigitos, percentual } from '@/lib/formato';
 
 export default function QuizScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -48,15 +47,15 @@ export default function QuizScreen() {
   const questao = questoes[indice];
   const acertos = questoes.length - erradas.length;
 
-  function confirmar() {
+  const confirmar = () => {
     if (escolhida === null) return;
     setRespondida(true);
     if (escolhida !== questao.correta) {
       setErradas((atual) => [...atual, indice]);
     }
-  }
+  };
 
-  function avancar() {
+  const avancar = () => {
     if (indice < questoes.length - 1) {
       setIndice(indice + 1);
       setEscolhida(null);
@@ -65,18 +64,18 @@ export default function QuizScreen() {
     }
 
     setDuracao(Date.now() - inicio);
-    registrarNota(modulo!.id, (questoes.length - erradas.length) / questoes.length);
+    registrarNota(modulo.id, acertos / questoes.length);
     setTerminou(true);
-  }
+  };
 
-  function refazer() {
+  const refazer = () => {
     setIndice(0);
     setEscolhida(null);
     setRespondida(false);
     setErradas([]);
     setTerminou(false);
     setInicio(Date.now());
-  }
+  };
 
   if (terminou) {
     return (
@@ -256,7 +255,7 @@ function Resultado({
   const router = useRouter();
   const theme = useTheme();
 
-  const percentual = Math.round((acertos / total) * 100);
+  const aproveitamento = percentual(acertos / total);
   const aprovado = acertos / total >= NOTA_MINIMA;
   const proximo = MODULOS[MODULOS.findIndex((m) => m.id === moduloId) + 1];
 
@@ -266,7 +265,7 @@ function Resultado({
         <ThemedText type="kicker" style={{ color: theme.inverseMuted }}>
           Avaliação concluída
         </ThemedText>
-        <PlacarContado percentual={percentual} cor={theme.inverseOn} />
+        <PlacarContado alvo={aproveitamento} cor={theme.inverseOn} />
         {/* Aprovação por símbolo + texto, nunca só pela cor. */}
         <ThemedText type="rowTitle" style={{ color: theme.inverseOn }}>
           {aprovado ? `✓ Aprovado` : `✕ Abaixo dos ${PERCENTUAL_MINIMO}% necessários`}
@@ -275,7 +274,7 @@ function Resultado({
           {acertos} de {total} corretas.{' '}
           {aprovado
             ? proximo
-              ? `Módulo ${String(proximo.numero).padStart(2, '0')} liberado.`
+              ? `Módulo ${doisDigitos(proximo.numero)} liberado.`
               : 'Você chegou ao fim da trilha.'
             : 'Sua melhor nota continua valendo — refaça quando quiser.'}
         </ThemedText>
@@ -287,7 +286,7 @@ function Resultado({
           { rotulo: 'Acertos', valor: `${acertos}/${total}` },
           {
             rotulo: 'Melhor nota',
-            valor: `${Math.round(Math.max(melhorNota ?? 0, acertos / total) * 100)}%`,
+            valor: `${percentual(Math.max(melhorNota ?? 0, acertos / total))}%`,
             destaque: true,
           },
         ]}
@@ -320,7 +319,7 @@ function Resultado({
             onPress={() =>
               router.replace({ pathname: '/modulo/[id]', params: { id: proximo.id } })
             }>
-            {`Ir para o módulo ${String(proximo.numero).padStart(2, '0')}`}
+            {`Ir para o módulo ${doisDigitos(proximo.numero)}`}
           </Button>
         ) : (
           <Button bloco size="lg" onPress={onRefazer}>
@@ -354,13 +353,13 @@ function Resultado({
  * O leitor de tela recebe a nota final de imediato pelo `accessibilityLabel` —
  * ninguém deveria ouvir a contagem subindo.
  */
-function PlacarContado({ percentual, cor }: { percentual: number; cor: string }) {
+function PlacarContado({ alvo, cor }: { alvo: number; cor: string }) {
   const reduzirMovimento = useReducedMotion();
-  const [mostrado, setMostrado] = useState(reduzirMovimento ? percentual : 0);
+  const [mostrado, setMostrado] = useState(reduzirMovimento ? alvo : 0);
 
   useEffect(() => {
     if (reduzirMovimento) {
-      setMostrado(percentual);
+      setMostrado(alvo);
       return;
     }
 
@@ -370,19 +369,19 @@ function PlacarContado({ percentual, cor }: { percentual: number; cor: string })
     const passo = () => {
       const t = Math.min(1, (Date.now() - inicio) / Motion.valor.duration);
       // Freia ao chegar: o número desacelera em vez de parar de supetão.
-      setMostrado(Math.round(percentual * (1 - (1 - t) ** 3)));
+      setMostrado(Math.round(alvo * (1 - (1 - t) ** 3)));
       if (t < 1) quadro = requestAnimationFrame(passo);
     };
 
     quadro = requestAnimationFrame(passo);
     return () => cancelAnimationFrame(quadro);
-  }, [percentual, reduzirMovimento]);
+  }, [alvo, reduzirMovimento]);
 
   return (
     <ThemedText
       type="display"
       accessibilityRole="header"
-      accessibilityLabel={`${percentual}%`}
+      accessibilityLabel={`${alvo}%`}
       style={[styles.placarNumero, { color: cor }]}>
       {mostrado}%
     </ThemedText>

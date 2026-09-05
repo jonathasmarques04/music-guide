@@ -25,8 +25,6 @@ export type CabecalhoProps = {
   destino?: Href;
   /** Régua de 2px fechando o cabeçalho. */
   regua?: boolean;
-  /** Ação à direita do título (um botão de texto, normalmente). */
-  acao?: React.ReactNode;
 };
 
 /**
@@ -34,7 +32,7 @@ export type CabecalhoProps = {
  * régua que separa o cabeçalho do conteúdo. Tudo alinhado no mesmo eixo — o
  * sistema não centraliza nada.
  */
-export function Cabecalho({ titulo, kicker, voltar, destino, regua = true, acao }: CabecalhoProps) {
+export function Cabecalho({ titulo, kicker, voltar, destino, regua = true }: CabecalhoProps) {
   const router = useRouter();
 
   return (
@@ -55,16 +53,12 @@ export function Cabecalho({ titulo, kicker, voltar, destino, regua = true, acao 
         </Button>
       )}
 
-      <View style={styles.linha}>
-        <View style={styles.textos}>
-          {kicker && <ThemedText type="kicker">{kicker}</ThemedText>}
-          <ThemedText
-            type={titulo.length > 22 ? 'subtitle' : 'title'}
-            accessibilityRole="header">
-            {titulo}
-          </ThemedText>
-        </View>
-        {acao}
+      <View style={styles.textos}>
+        {kicker && <ThemedText type="kicker">{kicker}</ThemedText>}
+        {/* Título longo cai um degrau na escala em vez de quebrar em três linhas. */}
+        <ThemedText type={titulo.length > 22 ? 'subtitle' : 'title'} accessibilityRole="header">
+          {titulo}
+        </ThemedText>
       </View>
 
       {regua && <Regua style={styles.regua} />}
@@ -74,12 +68,6 @@ export function Cabecalho({ titulo, kicker, voltar, destino, regua = true, acao 
 
 const styles = StyleSheet.create({
   bloco: { gap: Spacing.two },
-  linha: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    gap: Spacing.two,
-  },
   textos: { flexShrink: 1, gap: Spacing.one + Spacing.half },
   regua: { marginTop: Spacing.one },
 });

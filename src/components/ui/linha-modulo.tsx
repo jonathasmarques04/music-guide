@@ -6,6 +6,7 @@ import { MinTouchTarget, Rules, Spacing } from '@/constants/theme';
 import type { StatusModulo } from '@/contexts/progresso';
 import { useHover } from '@/hooks/use-hover';
 import { useTheme } from '@/hooks/use-theme';
+import { doisDigitos, percentual } from '@/lib/formato';
 
 export type LinhaModuloProps = {
   numero: number;
@@ -59,7 +60,7 @@ export function LinhaModulo({ numero, titulo, detalhe, status, nota, onPress }: 
       ]}>
       <View style={[styles.numero, { borderRightColor: atual ? theme.accentOn : theme.hairline }]}>
         <ThemedText type="rowTitle" style={[styles.numeroTexto, { color: cor }]}>
-          {String(numero).padStart(2, '0')}
+          {doisDigitos(numero)}
         </ThemedText>
       </View>
 
@@ -80,7 +81,7 @@ export function LinhaModulo({ numero, titulo, detalhe, status, nota, onPress }: 
           O estado nunca é só a cor da linha: concluído traz a nota, em curso
           traz a seta e bloqueado traz a palavra.
         */}
-        {status === 'concluido' && nota !== undefined && <Tag>{`${Math.round(nota * 100)}%`}</Tag>}
+        {status === 'concluido' && nota !== undefined && <Tag>{`${percentual(nota)}%`}</Tag>}
         {atual && (
           <ThemedText type="rowTitle" style={{ color: theme.accentOn }}>
             →

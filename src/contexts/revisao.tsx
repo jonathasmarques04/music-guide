@@ -22,6 +22,8 @@ export type ResumoModulo = {
   novos: number;
   /** Cards já estudados cuja hora chegou. */
   vencidos: number;
+  /** O que a fila de hoje tem para estudar: os novos mais os vencidos. */
+  pendentes: number;
   /** Cards em dia (nenhuma ação necessária agora). */
   emDia: number;
   /** Quando o próximo card volta, se não há nada pendente. */
@@ -29,13 +31,11 @@ export type ResumoModulo = {
 };
 
 type RevisaoValue = {
-  estados: Record<string, EstadoCard>;
   estadoDe: (chave: string) => EstadoCard | undefined;
   registrar: (chave: string, avaliacao: Avaliacao) => void;
   /** Índices dos cards do módulo que devem ser estudados agora. */
   filaDoModulo: (moduloId: string, agora?: number) => number[];
   resumoDoModulo: (moduloId: string, agora?: number) => ResumoModulo;
-  reiniciarModulo: (moduloId: string) => void;
 };
 
 const RevisaoContext = createContext<RevisaoValue | null>(null);
@@ -95,28 +95,17 @@ export function RevisaoProvider({ children }: { children: ReactNode }) {
       total: cards.length,
       novos,
       vencidos,
+      pendentes: novos + vencidos,
       emDia: cards.length - novos - vencidos,
       proximaRevisao,
     };
   };
 
-  const reiniciarModulo = (moduloId: string) => {
-    setEstados((atual) => {
-      const proximo = { ...atual };
-      for (const card of flashcardsPorModulo(moduloId)) {
-        delete proximo[chaveCard(moduloId, card.frente)];
-      }
-      return proximo;
-    });
-  };
-
   const value: RevisaoValue = {
-    estados,
     estadoDe,
     registrar,
     filaDoModulo,
     resumoDoModulo,
-    reiniciarModulo,
   };
 
   return <RevisaoContext.Provider value={value}>{children}</RevisaoContext.Provider>;

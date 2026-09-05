@@ -20,18 +20,24 @@ import { useAuth } from '@/contexts/auth';
 import { useProgresso } from '@/contexts/progresso';
 import { useHover } from '@/hooks/use-hover';
 import { useTheme } from '@/hooks/use-theme';
+import { MINIMO_SENHA, emailValido, faltamCaracteres } from '@/lib/credenciais';
+import { iniciais } from '@/lib/formato';
 
 const TOTAL_CARDS = MODULOS.reduce((soma, m) => soma + flashcardsPorModulo(m.id).length, 0);
 
-/** Mesmo mínimo que o Supabase aplica no servidor. */
-const MINIMO_SENHA = 6;
-
-const EMAIL = /^\S+@\S+\.\S+$/;
+/** O que os três formulários da seção "Conta" recebem do contexto de auth. */
+type Gravar = (valor: string) => Promise<{ erro: string | null }>;
 
 export default function PerfilScreen() {
-  const theme = useTheme();
-  const { session, atualizarNome, atualizarAvatar, removerAvatar, atualizarEmail, atualizarSenha, signOut } =
-    useAuth();
+  const {
+    session,
+    atualizarNome,
+    atualizarAvatar,
+    removerAvatar,
+    atualizarEmail,
+    atualizarSenha,
+    signOut,
+  } = useAuth();
   const { concluidos, totalAulas, statusDe, reiniciar } = useProgresso();
 
   const nomeAtual = session?.nome?.trim() || 'estudante';
@@ -51,7 +57,6 @@ export default function PerfilScreen() {
   const [erroFoto, setErroFoto] = useState<string | null>(null);
 
   const visitante = !!session?.isGuest;
-
 
   /*
    * O seletor devolve um arquivo local; quem sobe para o bucket é o contexto.
@@ -82,14 +87,13 @@ export default function PerfilScreen() {
     setTrocandoFoto(false);
   };
 
-  const tirarFoto = async () => {
+  const apagarFoto = async () => {
     setErroFoto(null);
     setTrocandoFoto(true);
     const { erro: falha } = await removerAvatar();
     setErroFoto(falha);
     setTrocandoFoto(false);
   };
-
 
   return (
     <Tela>
@@ -119,7 +123,7 @@ export default function PerfilScreen() {
           variant="ghost"
           size="sm"
           disabled={trocandoFoto}
-          onPress={tirarFoto}
+          onPress={apagarFoto}
           accessibilityHint="Remove a foto e volta às iniciais">
           Remover foto
         </Button>
@@ -152,7 +156,9 @@ export default function PerfilScreen() {
           onPress={visitante ? undefined : () => setEditando(editando === 'email' ? null : 'email')}
           accessibilityHint="Abre o formulário de troca de e-mail"
         />
-        {editando === 'email' && <TrocarEmail emailAtual={session?.email ?? ''} onTrocar={atualizarEmail} />}
+        {editando === 'email' && (
+          <TrocarEmail emailAtual={session?.email ?? ''} onTrocar={atualizarEmail} />
+        )}
 
         <LinhaLista
           rotulo="Senha"
@@ -303,7 +309,7 @@ function TrocarNome({
   onTrocar,
 }: {
   nomeAtual: string;
-  onTrocar: (nome: string) => Promise<{ erro: string | null }>;
+  onTrocar: Gravar;
 }) {
   const [nome, setNome] = useState(nomeAtual);
   const [salvando, setSalvando] = useState(false);
@@ -369,14 +375,14 @@ function TrocarEmail({
   onTrocar,
 }: {
   emailAtual: string;
-  onTrocar: (email: string) => Promise<{ erro: string | null }>;
+  onTrocar: Gravar;
 }) {
   const [email, setEmail] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [enviado, setEnviado] = useState(false);
 
-  const valido = EMAIL.test(email.trim()) && email.trim() !== emailAtual;
+  const valido = emailValido(email) && email.trim() !== emailAtual;
 
   const enviar = async () => {
     setEnviando(true);
@@ -432,7 +438,7 @@ function TrocarEmail({
 }
 
 /** Troca de senha na sessão já aberta. */
-function TrocarSenha({ onTrocar }: { onTrocar: (senha: string) => Promise<{ erro: string | null }> }) {
+function TrocarSenha({ onTrocar }: { onTrocar: Gravar }) {
   const [senha, setSenha] = useState('');
   const [confirmacao, setConfirmacao] = useState('');
   const [enviando, setEnviando] = useState(false);
@@ -470,7 +476,7 @@ function TrocarSenha({ onTrocar }: { onTrocar: (senha: string) => Promise<{ erro
         }}
         placeholder={`Pelo menos ${MINIMO_SENHA} caracteres`}
         invalido={curta}
-        ajuda={curta ? `Faltam ${MINIMO_SENHA - senha.length} para o mínimo.` : undefined}
+        ajuda={curta ? faltamCaracteres(MINIMO_SENHA - senha.length) : undefined}
         secureTextEntry
         autoComplete="new-password"
         autoCapitalize="none"
@@ -504,16 +510,6 @@ function TrocarSenha({ onTrocar }: { onTrocar: (senha: string) => Promise<{ erro
       </Button>
     </View>
   );
-}
-
-/** "Ana Souza" → "AS". Uma letra quando o nome é só um. */
-function iniciais(nome: string) {
-  const partes = nome.split(/\s+/).filter(Boolean);
-  return [partes[0], partes.length > 1 ? partes[partes.length - 1] : undefined]
-    .filter((parte): parte is string => !!parte)
-    .map((parte) => parte[0])
-    .join('')
-    .toUpperCase();
 }
 
 const styles = StyleSheet.create({

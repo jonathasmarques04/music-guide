@@ -14,6 +14,7 @@ import type { Bloco } from '@/content/tipos';
 import { Radius, Rules, Spacing } from '@/constants/theme';
 import { useProgresso } from '@/contexts/progresso';
 import { useTheme } from '@/hooks/use-theme';
+import { doisDigitos } from '@/lib/formato';
 
 /**
  * A aula em passos: uma seção por tela, com a barra de progresso no topo.
@@ -87,7 +88,7 @@ export default function LicaoScreen() {
 
       <Tela espaco={Spacing.two + Spacing.one}>
         <ThemedText type="kicker">
-          Módulo {String(modulo.numero).padStart(2, '0')} · Passo {atual + 1}
+          Módulo {doisDigitos(modulo.numero)} · Passo {atual + 1}
         </ThemedText>
         <ThemedText type="heading" accessibilityRole="header">
           {secao.titulo}

@@ -7,11 +7,10 @@ import { useTheme } from '@/hooks/use-theme';
 export type TagProps = {
   children: string;
   /**
-   * `accent` é o tingido de destaque, `neutral` o cinza de superfície,
-   * `outline` só o contorno e `solid` o preenchimento cheio — usado quando a
-   * tag é o próprio estado (a opção escolhida, o item ativo).
+   * `accent` é o tingido de destaque, `neutral` o cinza de superfície e
+   * `outline` só o contorno.
    */
-  variant?: 'accent' | 'neutral' | 'outline' | 'solid';
+  variant?: 'accent' | 'neutral' | 'outline';
 };
 
 export function Tag({ children, variant = 'neutral' }: TagProps) {
@@ -22,12 +21,7 @@ export function Tag({ children, variant = 'neutral' }: TagProps) {
       ? theme.accentSurface
       : variant === 'neutral'
         ? theme.backgroundElement
-        : variant === 'solid'
-          ? theme.accentStrong
-          : 'transparent';
-
-  const cor =
-    variant === 'solid' ? theme.accentOn : variant === 'neutral' ? theme.textSecondary : theme.accent;
+        : 'transparent';
 
   return (
     <View
@@ -36,7 +30,9 @@ export function Tag({ children, variant = 'neutral' }: TagProps) {
         { backgroundColor: fundo },
         variant === 'outline' && { borderWidth: Rules.hair, borderColor: theme.accent },
       ]}>
-      <ThemedText type="smallBold" style={[styles.texto, { color: cor }]}>
+      <ThemedText
+        type="smallBold"
+        style={[styles.texto, { color: variant === 'neutral' ? theme.textSecondary : theme.accent }]}>
         {children}
       </ThemedText>
     </View>

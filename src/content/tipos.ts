@@ -38,5 +38,8 @@ export type Flashcard = {
   verso: string;
 };
 
-/** Percentual mínimo de acerto para concluir um módulo e liberar o próximo. */
+/** Fração mínima de acerto para concluir um módulo e liberar o próximo. */
 export const NOTA_MINIMA = 0.6;
+
+/** O mesmo mínimo como percentual inteiro — é assim que a tela o escreve. */
+export const PERCENTUAL_MINIMO = Math.round(NOTA_MINIMA * 100);

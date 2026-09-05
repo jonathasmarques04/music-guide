@@ -2,11 +2,13 @@ import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Rules, Spacing } from '@/constants/theme';
+import type { StatusModulo } from '@/contexts/progresso';
 import { useTheme } from '@/hooks/use-theme';
+import { doisDigitos } from '@/lib/formato';
 
 export type CasaBraco = {
   numero: number;
-  status: 'concluido' | 'atual' | 'bloqueado';
+  status: StatusModulo;
 };
 
 export type BracoCompactoProps = {
@@ -19,7 +21,7 @@ export type BracoCompactoProps = {
  * Só que aqui elas são QUADRADAS. O sistema não tem raio, e um ponto redondo
  * seria o único círculo do app inteiro.
  */
-const MARCACOES = new Set([3, 5, 7, 9, 12]);
+const MARCACOES = new Set([3, 5, 7, 9, 12, 15, 17]);
 
 /**
  * A trilha como uma faixa de braço de violão.
@@ -29,8 +31,8 @@ const MARCACOES = new Set([3, 5, 7, 9, 12]);
  * olhando para o instrumento.
  *
  * É um DESENHO, não um controle: a linha "Progresso" logo acima já diz
- * "N de 13 aprovados" em texto, então a faixa fica escondida do leitor de tela
- * em vez de repetir a mesma informação em 13 pedaços.
+ * "N de M aprovados" em texto, então a faixa fica escondida do leitor de tela
+ * em vez de repetir a mesma informação casa por casa.
  */
 export function BracoCompacto({ casas }: BracoCompactoProps) {
   const theme = useTheme();
@@ -72,7 +74,7 @@ export function BracoCompacto({ casas }: BracoCompactoProps) {
           01
         </ThemedText>
         <ThemedText type="small" themeColor="textMuted" style={styles.ponta}>
-          {String(casas.length).padStart(2, '0')}
+          {doisDigitos(casas.length)}
         </ThemedText>
       </View>
     </View>

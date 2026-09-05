@@ -11,9 +11,8 @@ import { MODULOS } from '@/content/modulos';
 import { Radius, Rules, Spacing } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth';
 import { useTheme } from '@/hooks/use-theme';
-
-/** Mesmo mínimo que o Supabase aplica no servidor. */
-const MINIMO_SENHA = 6;
+import { MINIMO_SENHA, emailValido } from '@/lib/credenciais';
+import { doisDigitos } from '@/lib/formato';
 
 /**
  * O Supabase recusa reenvios em sequência (um por minuto, por padrão). Melhor
@@ -23,7 +22,10 @@ const SEGUNDOS_ENTRE_REENVIOS = 60;
 
 type Modo = 'boasVindas' | 'entrar' | 'cadastrar' | 'recuperar';
 
-const TEXTOS: Record<Exclude<Modo, 'boasVindas'>, { kicker: string; titulo: string; acao: string; dica: string }> = {
+/** O que muda de um modo para o outro — o formulário em si é o mesmo. */
+type TextosDoModo = { kicker: string; titulo: string; acao: string; dica: string };
+
+const TEXTOS: Record<Exclude<Modo, 'boasVindas'>, TextosDoModo> = {
   entrar: {
     kicker: 'Área do aluno',
     titulo: 'Entrar',
@@ -50,8 +52,15 @@ const VITRINE = [1, 5, 12]
   .filter((modulo): modulo is (typeof MODULOS)[number] => !!modulo);
 
 export function LoginScreen() {
-  const { signIn, signUp, recuperarSenha, reenviarConfirmacao, signInAsGuest, erroLink, limparErroLink } =
-    useAuth();
+  const {
+    signIn,
+    signUp,
+    recuperarSenha,
+    reenviarConfirmacao,
+    signInAsGuest,
+    erroLink,
+    limparErroLink,
+  } = useAuth();
 
   const [modo, setModo] = useState<Modo>('boasVindas');
   const [nome, setNome] = useState('');
@@ -72,7 +81,7 @@ export function LoginScreen() {
     return () => clearTimeout(id);
   }, [esperaReenvio]);
 
-  const emailValido = /^\S+@\S+\.\S+$/.test(email.trim());
+  const emailOk = emailValido(email);
   const senhaValida = senha.length >= MINIMO_SENHA;
   const nomeValido = nome.trim().length >= 2;
 
@@ -88,15 +97,21 @@ export function LoginScreen() {
   };
 
   if (modo === 'boasVindas') {
-    return <BoasVindas onEntrar={() => irPara('entrar')} onCadastrar={() => irPara('cadastrar')} onVisitante={signInAsGuest} />;
+    return (
+      <BoasVindas
+        onEntrar={() => irPara('entrar')}
+        onCadastrar={() => irPara('cadastrar')}
+        onVisitante={signInAsGuest}
+      />
+    );
   }
 
   const podeEnviar =
     modo === 'recuperar'
-      ? emailValido
+      ? emailOk
       : modo === 'entrar'
-        ? emailValido && senha.length > 0
-        : nomeValido && emailValido && senhaValida;
+        ? emailOk && senha.length > 0
+        : nomeValido && emailOk && senhaValida;
 
   const enviar = async () => {
     setEnviando(true);
@@ -297,7 +312,7 @@ function BoasVindas({
       </View>
 
       <ThemedText type="default" themeColor="textSecondary">
-        {MODULOS.length} módulos em ordem, do conceito de nota ao empréstimo modal. Cada um com
+        {MODULOS.length} módulos em ordem, do conceito de nota à construção de linhas de baixo. Cada um com
         aula em passos, avaliação e baralho de revisão.
       </ThemedText>
 
@@ -311,7 +326,7 @@ function BoasVindas({
             ]}>
             <View style={[styles.vitrineNumero, { borderRightColor: theme.hairline }]}>
               <ThemedText type="rowTitle" themeColor="accent" style={styles.vitrineNumeroTexto}>
-                {String(modulo.numero).padStart(2, '0')}
+                {doisDigitos(modulo.numero)}
               </ThemedText>
             </View>
             <View style={styles.vitrineTexto}>

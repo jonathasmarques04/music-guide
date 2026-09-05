@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/auth';
 import { useProgresso } from '@/contexts/progresso';
 import { useRevisao } from '@/contexts/revisao';
 import { useTheme } from '@/hooks/use-theme';
+import { doisDigitos, iniciais, percentual } from '@/lib/formato';
 
 export default function DashboardScreen() {
   const router = useRouter();
@@ -25,7 +26,7 @@ export default function DashboardScreen() {
 
   const nome = session?.nome?.trim() || 'estudante';
   const restantes = Math.max(0, totalAulas - concluidos);
-  const percentual = totalAulas === 0 ? 0 : Math.round((concluidos / totalAulas) * 100);
+  const daTrilha = totalAulas === 0 ? 0 : percentual(concluidos / totalAulas);
 
   /** O módulo em curso é sempre o primeiro que ainda não foi aprovado. */
   const atual = MODULOS.find((modulo) => statusDe(modulo.id) === 'atual');
@@ -35,10 +36,7 @@ export default function DashboardScreen() {
    * módulo trancado entregaria conteúdo que o aluno ainda não estudou.
    */
   const pendentes = MODULOS.filter((modulo) => statusDe(modulo.id) !== 'bloqueado').reduce(
-    (soma, modulo) => {
-      const resumo = resumoDoModulo(modulo.id);
-      return soma + resumo.vencidos + resumo.novos;
-    },
+    (soma, modulo) => soma + resumoDoModulo(modulo.id).pendentes,
     0
   );
 
@@ -75,13 +73,13 @@ export default function DashboardScreen() {
             type="subtitle"
             style={{ color: theme.accentOn }}
             accessibilityRole="header">
-            {String(atual.numero).padStart(2, '0')} · {atual.titulo}
+            {doisDigitos(atual.numero)} · {atual.titulo}
           </ThemedText>
           <ThemedText type="small" style={{ color: theme.accentOn }}>
             {atual.secoes.length} {atual.secoes.length === 1 ? 'seção' : 'seções'} ·{' '}
             {notaDe(atual.id) === undefined
               ? 'avaliação ainda não feita'
-              : `melhor nota ${Math.round((notaDe(atual.id) ?? 0) * 100)}%`}
+              : `melhor nota ${percentual(notaDe(atual.id) ?? 0)}%`}
           </ThemedText>
 
           <BarraProgresso
@@ -108,7 +106,7 @@ export default function DashboardScreen() {
         itens={[
           { rotulo: 'Concluídos', valor: `${concluidos}` },
           { rotulo: 'Restantes', valor: `${restantes}` },
-          { rotulo: 'Da trilha', valor: `${percentual}%`, destaque: true },
+          { rotulo: 'Da trilha', valor: `${daTrilha}%`, destaque: true },
         ]}
       />
 
@@ -162,16 +160,6 @@ export default function DashboardScreen() {
       )}
     </Tela>
   );
-}
-
-/** "Ana Souza" → "AS". Uma letra quando o nome é só um. */
-function iniciais(nome: string) {
-  const partes = nome.split(/\s+/).filter(Boolean);
-  const letras = [partes[0], partes.length > 1 ? partes[partes.length - 1] : undefined]
-    .filter((parte): parte is string => !!parte)
-    .map((parte) => parte[0]);
-
-  return letras.join('').toUpperCase();
 }
 
 const styles = StyleSheet.create({

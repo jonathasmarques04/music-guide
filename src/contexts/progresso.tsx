@@ -9,17 +9,13 @@ import { supabase } from '@/lib/supabase';
 export type StatusModulo = 'concluido' | 'atual' | 'bloqueado';
 
 type ProgressoValue = {
-  /** Melhor aproveitamento por módulo, de 0 a 1. */
-  notas: Record<string, number>;
   registrarNota: (moduloId: string, aproveitamento: number) => void;
   statusDe: (moduloId: string) => StatusModulo;
+  /** Melhor aproveitamento do módulo, de 0 a 1; `undefined` se nunca avaliado. */
   notaDe: (moduloId: string) => number | undefined;
   concluidos: number;
   totalAulas: number;
-  progressoDe: (moduloId: string) => number;
   reiniciar: () => void;
-  /** true enquanto buscamos o progresso salvo no Supabase. */
-  carregando: boolean;
   /** Preenchido quando a gravação no servidor falhou (o app segue funcionando). */
   erroSincronizacao: string | null;
 };
@@ -29,7 +25,6 @@ const ProgressoContext = createContext<ProgressoValue | null>(null);
 export function ProgressoProvider({ children }: { children: ReactNode }) {
   const { session } = useAuth();
   const [notas, setNotas] = useState<Record<string, number>>({});
-  const [carregando, setCarregando] = useState(false);
   const [erroSincronizacao, setErroSincronizacao] = useState<string | null>(null);
 
   /** null no modo visitante: aí o progresso é só de memória, nunca vai ao banco. */
@@ -39,12 +34,10 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!usuarioId) {
       setNotas({});
-      setCarregando(false);
       return;
     }
 
     let ativo = true;
-    setCarregando(true);
     setErroSincronizacao(null);
 
     supabase
@@ -56,15 +49,14 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
 
         if (error) {
           setErroSincronizacao(mensagemDeErro(error));
-        } else {
-          const salvas: Record<string, number> = {};
-          for (const linha of data) {
-            salvas[linha.modulo_id] = linha.aproveitamento;
-          }
-          setNotas(salvas);
+          return;
         }
 
-        setCarregando(false);
+        const salvas: Record<string, number> = {};
+        for (const linha of data) {
+          salvas[linha.modulo_id] = linha.aproveitamento;
+        }
+        setNotas(salvas);
       });
 
     return () => {
@@ -126,15 +118,12 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
   };
 
   const value: ProgressoValue = {
-    notas,
     registrarNota,
     statusDe,
     notaDe: (moduloId) => notas[moduloId],
     concluidos: MODULOS.filter((m) => passou(m.id)).length,
     totalAulas: MODULOS.length,
-    progressoDe: (moduloId) => (passou(moduloId) ? 1 : notas[moduloId] ?? 0),
     reiniciar,
-    carregando,
     erroSincronizacao,
   };
 

@@ -12,14 +12,13 @@ import { Tela } from '@/components/ui/tela';
 import { flashcardsPorModulo } from '@/content/flashcards';
 import { moduloPorId } from '@/content/modulos';
 import { quizPorModulo } from '@/content/quiz';
-import { NOTA_MINIMA } from '@/content/tipos';
+import { PERCENTUAL_MINIMO } from '@/content/tipos';
 import { MinTouchTarget, Radius, Rules, Spacing } from '@/constants/theme';
 import { useProgresso } from '@/contexts/progresso';
 import { useRevisao } from '@/contexts/revisao';
 import { useHover } from '@/hooks/use-hover';
 import { useTheme } from '@/hooks/use-theme';
-
-const PERCENTUAL_MINIMO = Math.round(NOTA_MINIMA * 100);
+import { doisDigitos, percentual } from '@/lib/formato';
 
 export default function ModuloScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -61,15 +60,14 @@ export default function ModuloScreen() {
   const nota = notaDe(modulo.id);
   const questoes = quizPorModulo(modulo.id).length;
   const cards = flashcardsPorModulo(modulo.id).length;
-  const resumo = resumoDoModulo(modulo.id);
-  const naFila = resumo.vencidos + resumo.novos;
+  const naFila = resumoDoModulo(modulo.id).pendentes;
 
   return (
     <Tela>
       <Cabecalho
         voltar="a trilha"
         destino="/trilha"
-        kicker={`Módulo ${String(modulo.numero).padStart(2, '0')}`}
+        kicker={`Módulo ${doisDigitos(modulo.numero)}`}
         titulo={modulo.titulo}
         regua={false}
       />
@@ -84,7 +82,7 @@ export default function ModuloScreen() {
         <View style={styles.progressoTopo}>
           <ThemedText type="label">Aproveitamento na avaliação</ThemedText>
           <ThemedText type="smallBold">
-            {nota === undefined ? '—' : `${Math.round(nota * 100)}%`}
+            {nota === undefined ? '—' : `${percentual(nota)}%`}
           </ThemedText>
         </View>
         <BarraProgresso
@@ -115,7 +113,7 @@ export default function ModuloScreen() {
               pressed && { backgroundColor: theme.backgroundSelected },
             ]}>
             <ThemedText type="rowTitle" themeColor="accent" style={styles.secaoNumero}>
-              {String(indice + 1).padStart(2, '0')}
+              {doisDigitos(indice + 1)}
             </ThemedText>
             <ThemedText type="rowTitle" style={styles.secaoTitulo}>
               {secao.titulo}
@@ -137,7 +135,7 @@ export default function ModuloScreen() {
           accessibilityRole="button"
           accessibilityLabel={
             status === 'concluido'
-              ? `Avaliação do módulo, concluída com ${Math.round((nota ?? 0) * 100)}%`
+              ? `Avaliação do módulo, concluída com ${percentual(nota ?? 0)}%`
               : 'Avaliação do módulo, pendente'
           }
           accessibilityHint={
@@ -161,7 +159,7 @@ export default function ModuloScreen() {
             </ThemedText>
           </View>
           {status === 'concluido' ? (
-            <Tag variant="accent">{`✓ ${Math.round((nota ?? 0) * 100)}%`}</Tag>
+            <Tag variant="accent">{`✓ ${percentual(nota ?? 0)}%`}</Tag>
           ) : (
             <Tag variant="outline">Pendente</Tag>
           )}
@@ -209,7 +207,7 @@ export default function ModuloScreen() {
             accessibilityHint={`Inicia a avaliação com ${questoes} questões`}>
             {nota === undefined
               ? 'Fazer a avaliação'
-              : `Refazer · melhor nota ${Math.round(nota * 100)}%`}
+              : `Refazer · melhor nota ${percentual(nota)}%`}
           </Button>
         )}
       </View>

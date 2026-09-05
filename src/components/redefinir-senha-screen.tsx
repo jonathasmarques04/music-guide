@@ -10,9 +10,7 @@ import { Tela } from '@/components/ui/tela';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth';
 import { useTheme } from '@/hooks/use-theme';
-
-/** Mesmo mínimo que o Supabase aplica no servidor. */
-const MINIMO_SENHA = 6;
+import { MINIMO_SENHA, faltamCaracteres } from '@/lib/credenciais';
 
 /**
  * Tela do link de recuperação de senha.
@@ -120,11 +118,6 @@ export function RedefinirSenhaScreen() {
       </Tela>
     </KeyboardAvoidingView>
   );
-}
-
-/** Concordância certa no singular: "Falta 1 caractere", "Faltam 2 caracteres". */
-function faltamCaracteres(quantos: number) {
-  return quantos === 1 ? 'Falta 1 caractere.' : `Faltam ${quantos} caracteres.`;
 }
 
 /** Cada exigência com o próprio ✓ ou —, para o aluno ver o que ainda falta. */

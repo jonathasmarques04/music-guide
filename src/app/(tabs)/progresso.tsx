@@ -10,19 +10,18 @@ import { Regua } from '@/components/ui/regua';
 import { Tag } from '@/components/ui/tag';
 import { Tela } from '@/components/ui/tela';
 import { MODULOS } from '@/content/modulos';
-import { NOTA_MINIMA } from '@/content/tipos';
+import { PERCENTUAL_MINIMO } from '@/content/tipos';
 import { MinTouchTarget, Rules, Spacing } from '@/constants/theme';
 import { useProgresso } from '@/contexts/progresso';
 import { useTheme } from '@/hooks/use-theme';
-
-const PERCENTUAL_MINIMO = Math.round(NOTA_MINIMA * 100);
+import { doisDigitos, percentual } from '@/lib/formato';
 
 export default function ProgressoScreen() {
   const router = useRouter();
   const theme = useTheme();
   const { concluidos, totalAulas, statusDe, notaDe } = useProgresso();
 
-  const percentual = totalAulas === 0 ? 0 : Math.round((concluidos / totalAulas) * 100);
+  const daTrilha = totalAulas === 0 ? 0 : percentual(concluidos / totalAulas);
   const avaliados = MODULOS.filter((modulo) => notaDe(modulo.id) !== undefined);
 
   const media =
@@ -52,7 +51,7 @@ export default function ProgressoScreen() {
           Trilha completa
         </ThemedText>
         <ThemedText type="display" style={[styles.placarNumero, { color: theme.inverseOn }]}>
-          {percentual}%
+          {daTrilha}%
         </ThemedText>
         <ThemedText type="small" style={{ color: theme.inverseMuted }}>
           {concluidos} de {totalAulas} módulos aprovados · mínimo de {PERCENTUAL_MINIMO}% em cada.
@@ -66,7 +65,7 @@ export default function ProgressoScreen() {
           { rotulo: 'Restantes', valor: `${Math.max(0, totalAulas - concluidos)}` },
           {
             rotulo: 'Média',
-            valor: media === undefined ? '—' : `${Math.round(media * 100)}%`,
+            valor: media === undefined ? '—' : `${percentual(media)}%`,
             destaque: true,
           },
         ]}
@@ -95,7 +94,7 @@ export default function ProgressoScreen() {
                   ? status === 'bloqueado'
                     ? 'Bloqueado'
                     : 'Ainda sem nota'
-                  : `${Math.round(nota * 100)} por cento`
+                  : `${percentual(nota)} por cento`
               }.`}
               accessibilityState={{ disabled: status === 'bloqueado' }}
               disabled={status === 'bloqueado'}
@@ -107,7 +106,7 @@ export default function ProgressoScreen() {
                 pressed && { backgroundColor: theme.backgroundSelected },
               ]}>
               <ThemedText type="small" themeColor="text" style={styles.colModulo}>
-                {String(modulo.numero).padStart(2, '0')} {modulo.titulo}
+                {doisDigitos(modulo.numero)} {modulo.titulo}
               </ThemedText>
 
               {nota === undefined ? (
@@ -116,7 +115,7 @@ export default function ProgressoScreen() {
                 </Tag>
               ) : (
                 <Tag variant={status === 'concluido' ? 'accent' : 'neutral'}>
-                  {`${status === 'concluido' ? '✓ ' : ''}${Math.round(nota * 100)}%`}
+                  {`${status === 'concluido' ? '✓ ' : ''}${percentual(nota)}%`}
                 </Tag>
               )}
             </Pressable>
@@ -128,8 +127,8 @@ export default function ProgressoScreen() {
         <View style={styles.fraco}>
           <Nota
             rotulo="Ponto fraco"
-            texto={`${pontoFraco.titulo} é sua menor nota (${Math.round(
-              (notaDe(pontoFraco.id) ?? 0) * 100
+            texto={`${pontoFraco.titulo} é sua menor nota (${percentual(
+              notaDe(pontoFraco.id) ?? 0
             )}%). Uma passada pelo baralho antes de refazer costuma resolver.`}
           />
           <Button
