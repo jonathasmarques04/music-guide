@@ -590,6 +590,29 @@ export const QUIZZES: Record<string, Questao[]> = {
       explicacao:
         'Dó e Sol diferem por uma única nota (Fá / Fá♯), o que torna a passagem quase imperceptível.',
     },
+    {
+      pergunta: 'No sentido anti-horário, o ciclo avança por qual intervalo?',
+      alternativas: ['5ª justa', '4ª justa', '3ª maior', '2ª maior'],
+      correta: 1,
+      explicacao: 'Descer uma quinta equivale a subir uma quarta: C → F → B♭ → E♭ é o caminho dos bemóis.',
+    },
+    {
+      pergunta: 'Quantos sustenidos tem a tonalidade de Ré maior?',
+      alternativas: ['Um', 'Dois', 'Três', 'Quatro'],
+      correta: 1,
+      explicacao: 'Ré é o segundo passo horário a partir de Dó: G tem 1 sustenido, D tem 2 (Fá♯ e Dó♯).',
+    },
+    {
+      pergunta: 'Para que serve, na prática, saber o ciclo das quintas?',
+      alternativas: [
+        'Para afinar o instrumento',
+        'Para saber a armadura de cada tom e quais tonalidades são vizinhas',
+        'Para calcular o andamento',
+        'Para escolher a figura rítmica certa',
+      ],
+      correta: 1,
+      explicacao: 'O ciclo é o mapa das tonalidades: diz quantos acidentes cada tom tem e quais tons estão perto uns dos outros.',
+    },
   ],
 
   'modulacao-transposicao': [
@@ -640,6 +663,51 @@ export const QUIZZES: Record<string, Questao[]> = {
       correta: 1,
       explicacao:
         'O I continua sendo I, o V continua sendo V. Só muda qual nota ocupa cada função.',
+    },
+    {
+      pergunta: 'O que é um acorde pivô?',
+      alternativas: [
+        'O acorde mais grave da progressão',
+        'Um acorde que pertence ao campo harmônico das duas tonalidades',
+        'O dominante da tonalidade de origem',
+        'Um acorde sem terça',
+      ],
+      correta: 1,
+      explicacao: 'Ele serve de ponte: chega-se nele pensando no tom antigo e sai-se dele pensando no novo. Am é vi de Dó e ii de Sol.',
+    },
+    {
+      pergunta: 'Qual caminho de modulação produz o corte mais abrupto?',
+      alternativas: ['Acorde pivô', 'Dominante secundário', 'Modulação cromática', 'Modulação direta'],
+      correta: 3,
+      explicacao: 'A modulação direta entra no tom novo sem preparo nenhum — é o recurso do refrão final que sobe de tom.',
+    },
+    {
+      pergunta: 'Qual é a forma mais segura de transpor uma progressão?',
+      alternativas: [
+        'Decorar tabelas de equivalência de acordes',
+        'Converter a progressão em graus, trocar de tom e converter de volta',
+        'Subir todos os acordes um tom',
+        'Trocar todos os sustenidos por bemóis',
+      ],
+      correta: 1,
+      explicacao: 'Os graus preservam a função e não erram na escolha entre sustenido e bemol; contar semitons funciona, mas escorrega na grafia.',
+    },
+    {
+      pergunta: 'A progressão I – vi – IV – V, aplicada em Mi maior, fica:',
+      alternativas: ['E – C♯m – A – B', 'E – Am – A – B', 'E – C♯m – A♯ – B', 'E – D♯m – A – B'],
+      correta: 0,
+      explicacao: 'No campo harmônico de Mi maior: I = E, vi = C♯m, IV = A, V = B.',
+    },
+    {
+      pergunta: 'Quando a modulação se confirma para o ouvido?',
+      alternativas: [
+        'No instante em que aparece um acorde de fora do campo',
+        'Quando a nova tônica passa a ser ouvida como repouso',
+        'Quando a melodia sobe de altura',
+        'Quando muda a armadura de clave no papel',
+      ],
+      correta: 1,
+      explicacao: 'Um acorde de fora sozinho é só empréstimo. Só há modulação quando o ouvido adota o novo centro como referência.',
     },
   ],
 
@@ -762,6 +830,350 @@ export const QUIZZES: Record<string, Questao[]> = {
       correta: 1,
       explicacao:
         'O efeito vem do contraste. Usado o tempo todo, deixa de ser surpresa e vira a nova tonalidade.',
+    },
+    {
+      pergunta: 'Numa música em Dó maior, de qual modo paralelo vem o acorde Fm?',
+      alternativas: ['De Dó menor, o modo paralelo', 'De Sol maior', 'De Lá menor', 'De Fá maior'],
+      correta: 0,
+      explicacao: 'Fm é o iv menor, emprestado de Dó menor. É um dos empréstimos mais usados na música popular.',
+    },
+    {
+      pergunta: 'O empréstimo modal muda a tonalidade da música?',
+      alternativas: [
+        'Sim, é sinônimo de modulação',
+        'Não — a tônica continua a mesma, só o acorde vem de outro modo',
+        'Sim, mas só temporariamente',
+        'Depende do andamento',
+      ],
+      correta: 1,
+      explicacao: 'Modular é trocar o centro tonal. No empréstimo, a tônica não se move: apenas um acorde vem emprestado de um modo paralelo.',
+    },
+  ],
+
+  extensoes: [
+    {
+      pergunta: 'A nona de um acorde corresponde a qual grau da escala?',
+      alternativas: ['Ao 2º grau, uma oitava acima', 'Ao 4º grau', 'Ao 6º grau', 'Ao 7º grau'],
+      correta: 0,
+      explicacao: 'A 9ª é o 2º grau deslocado uma oitava. O número maior indica que ela entra acima da sétima.',
+    },
+    {
+      pergunta: 'Por que a 11ª justa é evitada sobre um acorde maior?',
+      alternativas: [
+        'Porque não pertence à escala',
+        'Porque fica a um semitom da terça maior e turva o acorde',
+        'Porque duplica a quinta',
+        'Porque só existe em acordes menores',
+      ],
+      correta: 1,
+      explicacao: 'Em Dó, o Fá da 11ª fica um semitom acima do Mi. O choque é áspero — daí a ♯11 nos acordes maiores.',
+    },
+    {
+      pergunta: 'Na cifragem popular brasileira, o que "C9" costuma significar?',
+      alternativas: [
+        'Dó–Mi–Sol–Si♭–Ré, com sétima menor',
+        'Dó–Ré–Mi–Sol, sem sétima',
+        'Dó–Mi–Sol–Si, com sétima maior',
+        'Dó–Ré–Sol, sem terça',
+      ],
+      correta: 1,
+      explicacao: 'No uso popular PT-BR, "C9" quase sempre é o acorde sem sétima (equivalente a Cadd9). No jazz, a mesma cifra pressupõe a 7ª menor.',
+    },
+    {
+      pergunta: 'Num acorde de cinco ou seis notas, qual nota é a primeira candidata a ser omitida?',
+      alternativas: ['A terça', 'A sétima', 'A quinta justa', 'A nona'],
+      correta: 2,
+      explicacao: 'A quinta justa não define a qualidade nem a função do acorde. Terça e sétima são o par que não sai.',
+    },
+    {
+      pergunta: 'Qual é a diferença prática entre Csus2 e Cadd9?',
+      alternativas: [
+        'Nenhuma, são a mesma coisa',
+        'No sus2 a 2ª substitui a terça; no add9 a terça continua no acorde',
+        'O add9 não tem quinta',
+        'O sus2 tem sétima menor',
+      ],
+      correta: 1,
+      explicacao: 'As notas podem coincidir, mas o papel muda: sem terça o sus2 não é maior nem menor; o add9 mantém a terça e continua maior.',
+    },
+    {
+      pergunta: 'Em qual tipo de acorde a 13ª é mais natural?',
+      alternativas: ['No acorde diminuto', 'No acorde meio-diminuto', 'No acorde dominante', 'No acorde menor com sétima maior'],
+      correta: 2,
+      explicacao: 'A 13ª não briga com nenhuma nota do acorde e acrescenta brilho — o dominante é seu habitat natural.',
+    },
+    {
+      pergunta: 'Por que a pilha de terças para na 13ª?',
+      alternativas: [
+        'Porque a 15ª seria a fundamental duas oitavas acima',
+        'Porque a 15ª não existe na escala',
+        'Porque acima disso as notas ficam inaudíveis',
+        'Porque a 13ª é a última nota consonante',
+      ],
+      correta: 0,
+      explicacao: 'Com 1, 3, 5, 7, 9, 11 e 13 as sete notas da escala já foram usadas. A próxima terça volta à fundamental.',
+    },
+    {
+      pergunta: 'Qual par de notas basta, junto com o baixo na fundamental, para dizer o acorde inteiro?',
+      alternativas: ['Fundamental e quinta', 'Terça e sétima', 'Quinta e nona', 'Sétima e nona'],
+      correta: 1,
+      explicacao: 'A terça diz maior ou menor, a sétima diz a função. Com o baixo cobrindo a raiz, esse par já define o acorde.',
+    },
+  ],
+
+  inversoes: [
+    {
+      pergunta: 'Um acorde está na 1ª inversão quando qual nota está no baixo?',
+      alternativas: ['A fundamental', 'A terça', 'A quinta', 'A sétima'],
+      correta: 1,
+      explicacao: 'A 1ª inversão põe a terça no baixo: C/E. A 2ª põe a quinta (C/G) e a 3ª, só em tétrades, põe a sétima.',
+    },
+    {
+      pergunta: 'A cifra C/D representa uma inversão?',
+      alternativas: [
+        'Sim, é a 2ª inversão',
+        'Não, porque Ré não pertence ao acorde de Dó maior',
+        'Sim, é a 3ª inversão',
+        'Não, porque a barra indica troca de tom',
+      ],
+      correta: 1,
+      explicacao: 'Só é inversão quando a nota do baixo pertence ao acorde. Ré é estranho a C, então o resultado é uma sobreposição.',
+    },
+    {
+      pergunta: 'Quantos estados possíveis tem uma tétrade?',
+      alternativas: ['Dois', 'Três', 'Quatro', 'Cinco'],
+      correta: 2,
+      explicacao: 'Fundamental e três inversões — uma para cada nota que pode ir ao baixo.',
+    },
+    {
+      pergunta: 'Na progressão C – G/B – Am, qual é o desenho da linha do baixo?',
+      alternativas: ['Dó – Sol – Lá', 'Dó – Si – Lá', 'Dó – Ré – Mi', 'Dó – Mi – Sol'],
+      correta: 1,
+      explicacao: 'A inversão G/B troca o salto Dó–Sol por Dó–Si–Lá: o baixo desce por graus conjuntos em vez de saltar.',
+    },
+    {
+      pergunta: 'O que é um baixo pedal?',
+      alternativas: [
+        'Uma nota grave que se mantém enquanto a harmonia muda por cima',
+        'Uma inversão da tétrade',
+        'Uma nota tocada com o pé',
+        'A fundamental do último acorde da música',
+      ],
+      correta: 0,
+      explicacao: 'O pedal segura a nota grave — normalmente a tônica ou a dominante — enquanto os acordes se movem acima dela.',
+    },
+    {
+      pergunta: 'Numa banda, quem determina o estado de inversão do acorde?',
+      alternativas: ['O violão', 'O teclado', 'O baixo', 'A bateria'],
+      correta: 2,
+      explicacao: 'A inversão é definida pela nota mais grave que soa — e essa é a do baixo, não a do instrumento harmônico.',
+    },
+    {
+      pergunta: 'Qual inversão soa mais instável e pede continuação?',
+      alternativas: ['Estado fundamental', '1ª inversão', '2ª inversão', 'Nenhuma, todas soam iguais'],
+      correta: 2,
+      explicacao: 'A 2ª inversão, com a quinta no baixo, é a mais suspensa — por isso raramente encerra uma frase.',
+    },
+  ],
+
+  'leitura-ritmica': [
+    {
+      pergunta: 'Em compasso 4/4, quantas colcheias cabem em um compasso?',
+      alternativas: ['Quatro', 'Seis', 'Oito', 'Dezesseis'],
+      correta: 2,
+      explicacao: 'A colcheia vale meio tempo; com 4 tempos por compasso, cabem 8.',
+    },
+    {
+      pergunta: 'Quanto vale uma semínima pontuada em 4/4?',
+      alternativas: ['0,75 de tempo', '1 tempo', '1,5 tempo', '2 tempos'],
+      correta: 2,
+      explicacao: 'O ponto acrescenta metade do valor da figura: 1 + 0,5 = 1,5 tempo.',
+    },
+    {
+      pergunta: 'O que a ligadura de valor faz?',
+      alternativas: [
+        'Une notas de alturas diferentes pedindo som conectado',
+        'Une duas figuras de mesma altura somando as durações',
+        'Encurta a nota pela metade',
+        'Indica repetição do compasso',
+      ],
+      correta: 1,
+      explicacao: 'A segunda figura não é tocada de novo: só prolonga a primeira. É assim que uma nota atravessa a barra de compasso.',
+    },
+    {
+      pergunta: 'Qual é a diferença entre síncope e contratempo?',
+      alternativas: [
+        'Não há diferença',
+        'Na síncope a nota começa no tempo fraco e se prolonga sobre o forte; no contratempo o tempo forte fica em silêncio',
+        'A síncope só existe em compasso composto',
+        'O contratempo só existe em 6/8',
+      ],
+      correta: 1,
+      explicacao: 'Os dois tiram o acento do tempo forte, mas a síncope o atravessa com som e o contratempo o deixa vazio.',
+    },
+    {
+      pergunta: 'O compasso 6/8 é classificado como:',
+      alternativas: [
+        'Simples, com 6 tempos',
+        'Composto, com 2 tempos divididos em 3',
+        'Composto, com 6 tempos divididos em 2',
+        'Simples, com 3 tempos',
+      ],
+      correta: 1,
+      explicacao: 'Em compasso composto o número de cima é múltiplo de 3 e cada tempo se divide em três: 6/8 são 2 tempos de três colcheias.',
+    },
+    {
+      pergunta: 'O que é uma tercina?',
+      alternativas: [
+        'Três compassos seguidos iguais',
+        'Três notas ocupando o espaço de duas',
+        'Uma nota que vale três tempos',
+        'O terceiro tempo do compasso',
+      ],
+      correta: 1,
+      explicacao: 'A tercina é a quiáltera mais comum: empresta a divisão ternária dentro de um contexto binário.',
+    },
+    {
+      pergunta: 'Em 4/4, qual é a contagem falada correta para semicolcheias?',
+      alternativas: ['1 e 2 e 3 e 4 e', '1 e ê a 2 e ê a 3 e ê a 4 e ê a', '1 e a 2 e a', '1 — 2 — 3 — 4'],
+      correta: 1,
+      explicacao: '"1 e ê a" divide cada tempo em quatro. "1 e 2 e" é a contagem de colcheias e "1 e a" a de compasso composto.',
+    },
+    {
+      pergunta: 'Por que a semínima vale 1 tempo em 4/4?',
+      alternativas: [
+        'Porque é sempre assim, em qualquer compasso',
+        'Porque o denominador 4 indica que a semínima é a unidade de tempo',
+        'Porque o numerador é 4',
+        'Porque ela é a figura mais curta usada',
+      ],
+      correta: 1,
+      explicacao: 'O número de baixo diz qual figura vale a batida. Em 4/2 quem vale a batida é a mínima — a proporção entre as figuras é que nunca muda.',
+    },
+  ],
+
+  'braco-do-baixo': [
+    {
+      pergunta: 'Qual é a afinação padrão do baixo de quatro cordas, da mais grave para a mais aguda?',
+      alternativas: ['Mi–Lá–Ré–Sol', 'Sol–Ré–Lá–Mi', 'Mi–Lá–Ré–Si', 'Lá–Ré–Sol–Dó'],
+      correta: 0,
+      explicacao: 'E–A–D–G: as mesmas quatro cordas graves do violão, uma oitava abaixo.',
+    },
+    {
+      pergunta: 'Qual é o intervalo entre duas cordas vizinhas do baixo?',
+      alternativas: ['Terça maior', '4ª justa', '5ª justa', 'Oitava'],
+      correta: 1,
+      explicacao: 'Cinco semitons entre cada par de cordas. É essa regularidade que faz um desenho de dedos valer no braço inteiro.',
+    },
+    {
+      pergunta: 'Partindo de uma nota qualquer, onde está a oitava acima?',
+      alternativas: [
+        'Duas cordas adiante, 2 casas à frente',
+        'Na corda seguinte, mesma casa',
+        'Na mesma corda, 7 casas à frente',
+        'Duas cordas adiante, mesma casa',
+      ],
+      correta: 0,
+      explicacao: 'Duas cordas na direção aguda mais duas casas. Do Dó na corda Lá casa 3, a oitava é o Dó na corda Sol casa 5.',
+    },
+    {
+      pergunta: 'Que nota soa na corda Lá, casa 3?',
+      alternativas: ['Si', 'Dó', 'Ré', 'Dó♯'],
+      correta: 1,
+      explicacao: 'Lá → Lá♯ (1) → Si (2) → Dó (3). É uma das posições mais usadas do braço.',
+    },
+    {
+      pergunta: 'Onde está a 5ª justa em relação a uma nota do braço?',
+      alternativas: [
+        'Mesma casa, corda seguinte',
+        'Corda seguinte, 2 casas à frente',
+        'Mesma corda, 5 casas à frente',
+        'Duas cordas adiante, mesma casa',
+      ],
+      correta: 1,
+      explicacao: 'A mesma casa na corda seguinte dá a 4ª justa; a 5ª justa está duas casas depois dela.',
+    },
+    {
+      pergunta: 'O que acontece a partir da casa 12?',
+      alternativas: [
+        'As notas continuam subindo sem repetir',
+        'O desenho de notas se repete uma oitava acima',
+        'A afinação muda',
+        'As cordas passam a soar em 5ªs',
+      ],
+      correta: 1,
+      explicacao: 'Doze casas são doze semitons — uma oitava completa. Da casa 12 em diante tudo se repete.',
+    },
+    {
+      pergunta: 'No baixo de cinco cordas, qual corda é acrescentada?',
+      alternativas: ['Um Dó agudo acima do Sol', 'Um Si grave abaixo do Mi', 'Um Ré grave abaixo do Mi', 'Um Lá agudo acima do Sol'],
+      correta: 1,
+      explicacao: 'B–E–A–D–G: o Si grave mantém a mesma distância de 4ª justa entre cordas vizinhas.',
+    },
+  ],
+
+  'linhas-de-baixo': [
+    {
+      pergunta: 'Quais são as duas funções simultâneas de uma linha de baixo?',
+      alternativas: [
+        'Melodia e improviso',
+        'Declarar a fundamental e trancar o ritmo com a bateria',
+        'Dobrar o vocal e marcar o refrão',
+        'Fazer contraponto e sustentar a dinâmica',
+      ],
+      correta: 1,
+      explicacao: 'Harmonia e ritmo ao mesmo tempo. Nota que não serve a uma das duas está sobrando.',
+    },
+    {
+      pergunta: 'No walking bass, o que se toca no tempo 1 de cada compasso?',
+      alternativas: ['A quinta do acorde', 'A fundamental do acorde', 'A sétima do acorde', 'Uma nota cromática'],
+      correta: 1,
+      explicacao: 'Tempo 1 = fundamental; tempo 4 = aproximação do próximo acorde. Os tempos 2 e 3 são o espaço de criação.',
+    },
+    {
+      pergunta: 'O que é uma aproximação cromática?',
+      alternativas: [
+        'Chegar na fundamental seguinte por um semitom, acima ou abaixo',
+        'Tocar a escala cromática inteira',
+        'Repetir a fundamental em oitavas',
+        'Saltar uma quinta antes da mudança de acorde',
+      ],
+      correta: 0,
+      explicacao: 'Um semitom antes do alvo. Para chegar em Fá, toca-se Mi (por baixo) ou Fá♯ (por cima).',
+    },
+    {
+      pergunta: 'Onde a nota de passagem costuma entrar no compasso?',
+      alternativas: ['No tempo 1', 'No tempo 2', 'No último tempo, antes da troca de acorde', 'Em qualquer tempo, indiferente'],
+      correta: 2,
+      explicacao: 'Ali ela empurra para o acorde seguinte. Em outros lugares tende a soar como erro.',
+    },
+    {
+      pergunta: 'Sobre o acorde de Fá maior, qual sequência corresponde ao nível "arpejo"?',
+      alternativas: ['Fá – Fá – Fá – Fá', 'Fá – Dó – Fá – Dó', 'Fá – Lá – Dó', 'Fá – Sol – Lá – Si♭'],
+      correta: 2,
+      explicacao: 'Arpejo é tocar as notas do próprio acorde: fundamental, terça e quinta de F são Fá, Lá e Dó.',
+    },
+    {
+      pergunta: 'O que caracteriza um groove bem construído?',
+      alternativas: [
+        'Uma frase nova a cada compasso',
+        'Um desenho curto repetido, com espaço e encaixe no bumbo',
+        'O maior número possível de notas por compasso',
+        'Arpejos rápidos em toda a música',
+      ],
+      correta: 1,
+      explicacao: 'Repetição cria identidade; o silêncio dá o balanço. A variação fica guardada para a virada.',
+    },
+    {
+      pergunta: 'Qual é o erro mais comum de quem começa a construir linhas?',
+      alternativas: [
+        'Tocar a fundamental no tempo certo',
+        'Preencher todos os espaços com notas',
+        'Repetir o mesmo desenho por oito compassos',
+        'Casar o ataque com o bumbo',
+      ],
+      correta: 1,
+      explicacao: 'Encher tudo vem de tratar o baixo como solista. As outras três alternativas descrevem acertos, não erros.',
     },
   ],
 };

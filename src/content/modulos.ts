@@ -905,6 +905,69 @@ export const MODULOS: Modulo[] = [
           },
         ],
       },
+      {
+        titulo: 'Os caminhos da modulação',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Modular não é trocar de tom por decreto: é preparar o ouvido para aceitar um novo centro. Há quatro caminhos usuais, do mais suave ao mais abrupto.',
+          },
+          {
+            tipo: 'tabela',
+            cabecalho: ['Caminho', 'Como funciona', 'Efeito'],
+            linhas: [
+              ['Acorde pivô', 'Usa um acorde que existe nos dois campos harmônicos', 'Costura invisível'],
+              ['Dominante secundário', 'Prepara a nova tônica com o V7 dela', 'Direcionado, natural'],
+              ['Cromática', 'Desliza por semitom até o novo acorde', 'Tenso, moderno'],
+              ['Direta', 'Entra no tom novo sem preparo nenhum', 'Corte seco, típico do refrão final'],
+            ],
+          },
+          {
+            tipo: 'paragrafo',
+            texto:
+              'O acorde pivô é o mais comum. Para modular de Dó maior para Sol maior, Am serve: é o vi de Dó e o ii de Sol. Chega-se nele pensando em Dó e sai-se dele pensando em Sol.',
+          },
+          {
+            tipo: 'destaque',
+            titulo: 'Quando o ouvido aceita',
+            texto:
+              'A modulação só se confirma quando a nova tônica é ouvida como repouso. Antes disso, o que houve foi só um acorde de fora — modular exige ficar no tom novo tempo suficiente para o ouvido mudar de referência.',
+          },
+        ],
+      },
+      {
+        titulo: 'Transpondo na prática',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'O jeito seguro de transpor não é decorar tabelas de acordes: é passar pelos graus. Converta a progressão em números, troque de tom, converta de volta.',
+          },
+          {
+            tipo: 'tabela',
+            cabecalho: ['Etapa', 'Exemplo'],
+            linhas: [
+              ['Progressão original (Dó maior)', 'C – Am – F – G'],
+              ['Em graus', 'I – vi – IV – V'],
+              ['Aplicando em Mi maior', 'E – C♯m – A – B'],
+            ],
+          },
+          {
+            tipo: 'paragrafo',
+            texto:
+              'O caminho alternativo é contar semitons: de Dó para Mi são 4 semitons, então todo acorde sobe 4 semitons. Funciona, mas erra com facilidade na hora de escolher entre sustenido e bemol — os graus não erram.',
+          },
+          {
+            tipo: 'lista',
+            itens: [
+              'Pensar em graus mostra a função de cada acorde e sobrevive à troca de tom',
+              'No braço do instrumento, transpor é mover a mesma forma algumas casas',
+              'Escolha a direção pela voz: se o cantor aperta no agudo, desça; se some no grave, suba',
+            ],
+          },
+        ],
+      },
     ],
   },
 
@@ -1015,6 +1078,725 @@ export const MODULOS: Modulo[] = [
               'Escolha um que faça sentido emocionalmente',
               'Use pontualmente e volte ao campo harmônico original',
             ],
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'extensoes',
+    numero: 14,
+    titulo: 'Extensões e tensões',
+    resumo: 'A nona, a décima primeira e a décima terceira — a cor que vem depois da sétima.',
+    secoes: [
+      {
+        titulo: 'Empilhando terças além da sétima',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'A tríade empilha duas terças, a tétrade empilha três. Nada impede continuar: a quarta terça traz a nona, a quinta traz a décima primeira e a sexta traz a décima terceira.',
+          },
+          {
+            tipo: 'formula',
+            rotulo: 'A pilha completa',
+            texto: '1 – 3 – 5 – 7 – 9 – 11 – 13',
+          },
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Repare que 9, 11 e 13 são a 2ª, a 4ª e a 6ª da escala, só que uma oitava acima. O número maior não é enfeite: ele avisa que a nota entra por cima da sétima, e não colada na fundamental.',
+          },
+          {
+            tipo: 'tabela',
+            cabecalho: ['Extensão', 'Mesmo grau que', 'Em Dó'],
+            linhas: [
+              ['9ª', '2º grau', 'Ré'],
+              ['11ª', '4º grau', 'Fá'],
+              ['13ª', '6º grau', 'Lá'],
+            ],
+          },
+          {
+            tipo: 'destaque',
+            titulo: 'Por que parar na 13ª',
+            texto:
+              'A próxima terça da pilha seria a 15ª — que é a própria fundamental duas oitavas acima. O ciclo fecha ali: com 1, 3, 5, 7, 9, 11 e 13 você já usou as sete notas da escala.',
+          },
+        ],
+      },
+      {
+        titulo: 'Nona: o cuidado com a cifra',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'A nona é a extensão mais usada — e a que mais confunde, porque a mesma cifra significa coisas diferentes dependendo de quem escreveu.',
+          },
+          {
+            tipo: 'tabela',
+            cabecalho: ['Cifra', 'Uso popular (PT-BR)', 'Uso no jazz'],
+            linhas: [
+              ['C9', 'Dó–Ré–Mi–Sol (sem sétima)', 'Dó–Mi–Sol–Si♭–Ré (com 7ª menor)'],
+              ['Cadd9', 'Dó–Ré–Mi–Sol (sem sétima)', 'Dó–Ré–Mi–Sol (sem sétima)'],
+              ['C7(9)', 'Dó–Mi–Sol–Si♭–Ré', 'Dó–Mi–Sol–Si♭–Ré'],
+            ],
+          },
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Na música popular brasileira, "C9" quase sempre quer dizer o acorde sem sétima — aquele violão aberto e arejado. No jazz, "C9" pressupõe a sétima menor. Na dúvida, escreva "add9" ou "7(9)": são cifras que ninguém lê errado.',
+          },
+          {
+            tipo: 'lista',
+            itens: [
+              '♭9 e ♯9 — nonas alteradas, quase exclusivas de acordes dominantes; carregam tensão para resolver',
+              'sus2 x add9 — mesmas notas no papel, papéis diferentes: no sus2 a 2ª substitui a terça, no add9 a terça continua lá',
+            ],
+          },
+        ],
+      },
+      {
+        titulo: 'Décima primeira: a nota que briga com a terça',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'A 11ª justa fica a apenas um semitom acima da terça maior. Em Dó: Fá contra Mi. Esse choque é áspero e turva o acorde — por isso a 11ª justa raramente aparece sobre acordes maiores.',
+          },
+          {
+            tipo: 'lista',
+            itens: [
+              'Acorde menor — a 11ª justa cabe bem, porque a terça é menor e o choque desaparece (Dm11)',
+              'Acorde maior ou dominante — usa-se a ♯11 no lugar (C7M(♯11)), que soa aberta em vez de suja',
+              'Acorde sus4 — aqui a 4ª entra justamente porque a terça saiu de cena',
+            ],
+          },
+          {
+            tipo: 'destaque',
+            titulo: 'Nota de evitar',
+            texto:
+              'É esse o sentido de "avoid note": não é nota proibida, é nota que exige contexto. Sobre C7M, o Fá pede para ser passagem rápida, não nota de apoio.',
+          },
+        ],
+      },
+      {
+        titulo: 'Décima terceira e o dominante colorido',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'A 13ª é a extensão mais confortável de todas: não briga com nenhuma nota do acorde e acrescenta um brilho suave. Seu habitat natural é o acorde dominante.',
+          },
+          {
+            tipo: 'lista',
+            itens: [
+              'C13 → Dó–Mi–Sol–Si♭–Ré–Lá (na prática se omitem notas; ver a seção seguinte)',
+              'C7(13) → mesma ideia, cifrando só a extensão que interessa',
+              '13ª é Lá, não Lá♭ — a ♭13 é outra coisa, uma tensão alterada de dominante',
+            ],
+          },
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Um C13 completo tem seis notas. Ninguém toca as seis: descarta-se a quinta, que não define nada, e muitas vezes a própria fundamental — que o baixo já está cobrindo.',
+          },
+        ],
+      },
+      {
+        titulo: 'O que sobra quando o baixo já toca a fundamental',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Numa banda, a fundamental é responsabilidade do baixo. Isso libera o instrumento harmônico para tocar só o que define a cor do acorde.',
+          },
+          {
+            tipo: 'tabela',
+            cabecalho: ['Nota', 'Pode sair?', 'Por quê'],
+            linhas: [
+              ['Fundamental', 'Sim, se o baixo tocar', 'A raiz já está soando embaixo'],
+              ['3ª', 'Não', 'É ela que diz maior ou menor'],
+              ['5ª justa', 'Sim', 'Não altera a qualidade do acorde'],
+              ['7ª', 'Não', 'É ela que define a função do acorde'],
+              ['9ª / 11ª / 13ª', 'Sim, são opcionais', 'São cor, não estrutura'],
+            ],
+          },
+          {
+            tipo: 'destaque',
+            titulo: 'O par que não sai',
+            texto:
+              'Terça e sétima são o guia do acorde. Com essas duas notas mais o baixo na fundamental, o acorde já está dito por inteiro — o resto é escolha de sabor.',
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'inversoes',
+    numero: 15,
+    titulo: 'Inversões e cifras com barra',
+    resumo: 'Quem manda no acorde é a nota do baixo: estados de inversão e condução da linha grave.',
+    secoes: [
+      {
+        titulo: 'Estado fundamental e inversões',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Um acorde está no estado fundamental quando a fundamental é a nota mais grave. Trocar qual nota fica embaixo não muda o acorde — muda o seu estado.',
+          },
+          {
+            tipo: 'tabela',
+            cabecalho: ['Estado', 'Nota no baixo', 'Dó maior', 'Cifra'],
+            linhas: [
+              ['Fundamental', 'Fundamental', 'Dó–Mi–Sol', 'C'],
+              ['1ª inversão', '3ª', 'Mi–Sol–Dó', 'C/E'],
+              ['2ª inversão', '5ª', 'Sol–Dó–Mi', 'C/G'],
+            ],
+          },
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Tétrades têm uma inversão a mais, a terceira, com a sétima no baixo: C7M/Si. Tríade tem três estados possíveis; tétrade tem quatro.',
+          },
+          {
+            tipo: 'destaque',
+            titulo: 'Quem decide a inversão',
+            texto:
+              'Não é o violão nem o teclado: é o baixo. Por mais que o acorde no violão comece em Mi, se o baixo toca Dó o ouvido escuta C no estado fundamental. A nota mais grave da banda é que manda.',
+          },
+        ],
+      },
+      {
+        titulo: 'Lendo a cifra com barra',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'A barra separa duas informações: antes dela, o acorde; depois, a nota que vai no baixo. Lê-se "C sobre E" ou "C com Mi no baixo".',
+          },
+          {
+            tipo: 'lista',
+            itens: [
+              'C/E — Dó maior com Mi no baixo: é inversão, porque Mi pertence ao acorde',
+              'C/G — Dó maior com Sol no baixo: também inversão',
+              'C/D — Dó maior com Ré no baixo: o Ré não pertence ao acorde, então não é inversão',
+            ],
+          },
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Só é inversão quando a nota do baixo já faz parte do acorde. Quando ela vem de fora, o resultado é um acorde novo por sobreposição — e muitas vezes é exatamente esse o efeito desejado.',
+          },
+        ],
+      },
+      {
+        titulo: 'Baixo caminhante por graus conjuntos',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'A razão prática de inverter acordes é fazer a linha do baixo andar de vizinho em vez de saltar. Compare a mesma progressão nas duas leituras.',
+          },
+          {
+            tipo: 'tabela',
+            cabecalho: ['Sem inversão', 'Baixo', 'Com inversão', 'Baixo'],
+            linhas: [
+              ['C', 'Dó', 'C', 'Dó'],
+              ['G', 'Sol (salto de 5ª)', 'G/B', 'Si'],
+              ['Am', 'Lá', 'Am', 'Lá'],
+              ['F', 'Fá', 'F/G', 'Sol'],
+            ],
+          },
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Na coluna da direita o baixo faz Dó–Si–Lá–Sol: uma escada descendente. A harmonia é a mesma, mas a linha grave virou melodia.',
+          },
+          {
+            tipo: 'destaque',
+            titulo: 'A descida clássica',
+            texto:
+              'C – C/B – Am – Am/G – F – F/E – Dm – G7 é o exemplo mais conhecido dessa ideia. O baixo desce Dó–Si–Lá–Sol–Fá–Mi–Ré enquanto os acordes por cima quase não se mexem.',
+          },
+        ],
+      },
+      {
+        titulo: 'Pedal e outros baixos que não se movem',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'O efeito oposto também vale: segurar uma nota grave enquanto a harmonia muda por cima. Isso se chama pedal.',
+          },
+          {
+            tipo: 'lista',
+            itens: [
+              'Pedal de tônica — o baixo trava no 1º grau; a harmonia se afasta e volta sem perder o chão',
+              'Pedal de dominante — o baixo trava no 5º grau; acumula tensão antes de uma entrada ou refrão',
+              'Cifras típicas de pedal: F/G, Dm7/G, Am7/G — sempre a mesma nota embaixo',
+            ],
+          },
+          {
+            tipo: 'paragrafo',
+            texto:
+              'F/G merece atenção: soa como um dominante de Dó sem ser um G7 comum. Muita música brasileira resolve em Dó vindo daí, com um repouso mais macio do que o G7 daria.',
+          },
+        ],
+      },
+      {
+        titulo: 'Escolhendo a inversão na prática',
+        blocos: [
+          {
+            tipo: 'lista',
+            itens: [
+              'Quer estabilidade — fundamental no baixo, principalmente no primeiro e no último acorde da frase',
+              'Quer movimento — inverta para que o baixo ande por tom ou semitom até o próximo acorde',
+              'Quer suspensão — a 2ª inversão, com a quinta no baixo, soa instável e pede continuação',
+              'Quer surpresa — baixo estranho ao acorde, como C/D ou C/F♯',
+            ],
+          },
+          {
+            tipo: 'destaque',
+            titulo: 'Regra de bolso',
+            texto:
+              'Meio da frase pede movimento; começo e fim pedem chão. Inverter tudo cansa tanto quanto não inverter nada.',
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'leitura-ritmica',
+    numero: 16,
+    titulo: 'Leitura rítmica',
+    resumo: 'Figuras, pausas, ponto, ligadura, síncope e quiálteras — o tempo no papel.',
+    secoes: [
+      {
+        titulo: 'As figuras e o que elas valem',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Cada figura dura o dobro da seguinte. Os valores abaixo estão em tempos de compasso 4/4, onde a semínima vale uma batida.',
+          },
+          {
+            tipo: 'tabela',
+            cabecalho: ['Figura', 'Vale', 'Cabem em 4/4'],
+            linhas: [
+              ['Semibreve', '4 tempos', '1'],
+              ['Mínima', '2 tempos', '2'],
+              ['Semínima', '1 tempo', '4'],
+              ['Colcheia', '1/2 tempo', '8'],
+              ['Semicolcheia', '1/4 de tempo', '16'],
+              ['Fusa', '1/8 de tempo', '32'],
+            ],
+          },
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Cada figura tem uma pausa equivalente, que vale exatamente o mesmo em silêncio. Pausa não é buraco: é uma duração que se conta igual às outras.',
+          },
+          {
+            tipo: 'destaque',
+            titulo: 'Os valores são relativos',
+            texto:
+              'A semínima só vale 1 tempo porque o denominador do 4/4 é 4. Em 4/2 quem vale a batida é a mínima. O que nunca muda é a proporção entre as figuras.',
+          },
+        ],
+      },
+      {
+        titulo: 'Contando em voz alta',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Ler ritmo é contar sempre a mesma grade e encaixar as notas nela. A contagem não muda quando o ritmo fica difícil — é ela que segura o barco.',
+          },
+          {
+            tipo: 'formula',
+            rotulo: 'Semínimas',
+            texto: '1 — 2 — 3 — 4',
+          },
+          {
+            tipo: 'formula',
+            rotulo: 'Colcheias',
+            texto: '1 e 2 e 3 e 4 e',
+          },
+          {
+            tipo: 'formula',
+            rotulo: 'Semicolcheias',
+            texto: '1 e ê a 2 e ê a 3 e ê a 4 e ê a',
+          },
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Os números caem no tempo; o "e" cai no contratempo. Quem consegue dizer a contagem inteira enquanto toca já não se perde no compasso.',
+          },
+        ],
+      },
+      {
+        titulo: 'Ponto de aumento e ligadura',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto: 'Há duas formas de esticar uma nota além do valor da figura escrita.',
+          },
+          {
+            tipo: 'formula',
+            rotulo: 'Ponto de aumento',
+            texto: 'figura + metade dela mesma',
+          },
+          {
+            tipo: 'lista',
+            itens: [
+              'Semínima pontuada = 1 + 1/2 = 1,5 tempo',
+              'Mínima pontuada = 2 + 1 = 3 tempos',
+              'Colcheia pontuada = 1/2 + 1/4 = 0,75 de tempo',
+            ],
+          },
+          {
+            tipo: 'paragrafo',
+            texto:
+              'A ligadura de valor une duas figuras de mesma altura e soma as durações: a segunda não é tocada de novo, só prolonga a primeira. É assim que uma nota atravessa a barra de compasso.',
+          },
+          {
+            tipo: 'destaque',
+            titulo: 'Não confunda as duas ligaduras',
+            texto:
+              'A ligadura de valor une notas de mesma altura e soma tempo. A ligadura de expressão cobre notas diferentes e pede que soem conectadas. O desenho é parecido; a instrução é outra.',
+          },
+        ],
+      },
+      {
+        titulo: 'Síncope e contratempo',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Os dois deslocam o acento para fora do tempo forte, mas de maneiras diferentes.',
+          },
+          {
+            tipo: 'tabela',
+            cabecalho: ['', 'Contratempo', 'Síncope'],
+            linhas: [
+              ['O que acontece', 'A nota soa entre os tempos', 'A nota começa no fraco e se prolonga no forte'],
+              ['O tempo forte', 'Fica em silêncio', 'É ocupado pela nota que já vinha soando'],
+              ['Sensação', 'Picotado, saltitante', 'Empurra a música para a frente'],
+            ],
+          },
+          {
+            tipo: 'paragrafo',
+            texto:
+              'A síncope é a espinha dorsal do ritmo brasileiro. Samba, choro, baião e maracatu vivem de notas que entram antes do tempo forte e o atravessam.',
+          },
+        ],
+      },
+      {
+        titulo: 'Compassos simples, compostos e quiálteras',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Em compasso simples cada tempo se divide em 2. Em compasso composto cada tempo se divide em 3 — e o número de cima é múltiplo de 3.',
+          },
+          {
+            tipo: 'tabela',
+            cabecalho: ['Compasso', 'Tipo', 'Sensação'],
+            linhas: [
+              ['2/4', 'Simples', '2 tempos divididos em 2'],
+              ['3/4', 'Simples', '3 tempos divididos em 2 (valsa)'],
+              ['4/4', 'Simples', '4 tempos divididos em 2'],
+              ['6/8', 'Composto', '2 tempos divididos em 3'],
+              ['12/8', 'Composto', '4 tempos divididos em 3'],
+            ],
+          },
+          {
+            tipo: 'paragrafo',
+            texto:
+              'A quiáltera é a exceção temporária: ela empresta a divisão do outro time. A mais comum é a tercina — três notas ocupando o espaço de duas, escritas com um "3" em cima.',
+          },
+          {
+            tipo: 'destaque',
+            titulo: 'Como sentir 6/8',
+            texto:
+              'Não conte seis. Conte dois, com três subdivisões cada: "1 e a 2 e a". Contar as seis colcheias uma a uma destrói o balanço que faz o 6/8 existir.',
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'braco-do-baixo',
+    numero: 17,
+    titulo: 'O braço do baixo',
+    resumo: 'Afinação, mapa das notas, formas de oitava e quinta, e como achar qualquer nota.',
+    secoes: [
+      {
+        titulo: 'A afinação padrão',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'O baixo de quatro cordas é afinado, da mais grave para a mais aguda, em Mi–Lá–Ré–Sol (E–A–D–G). São as mesmas quatro cordas graves do violão, uma oitava abaixo.',
+          },
+          {
+            tipo: 'tabela',
+            cabecalho: ['Corda', 'Nota', 'Cifra'],
+            linhas: [
+              ['4ª (mais grave)', 'Mi', 'E'],
+              ['3ª', 'Lá', 'A'],
+              ['2ª', 'Ré', 'D'],
+              ['1ª (mais aguda)', 'Sol', 'G'],
+            ],
+          },
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Cada corda está uma 4ª justa acima da anterior — cinco semitons. No baixo de cinco cordas acrescenta-se um Si abaixo do Mi (B–E–A–D–G), mantendo a mesma distância de 4ª.',
+          },
+          {
+            tipo: 'destaque',
+            titulo: 'Por que as 4ªs importam',
+            texto:
+              'Como o intervalo entre cordas vizinhas é sempre o mesmo, qualquer desenho de dedos vale em qualquer par de cordas. Aprender uma forma é aprendê-la no braço inteiro.',
+          },
+        ],
+      },
+      {
+        titulo: 'Casas, semitons e a oitava na casa 12',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Cada casa avança exatamente um semitom. Doze casas depois você percorreu os doze semitons e chegou na mesma nota, uma oitava acima.',
+          },
+          {
+            tipo: 'formula',
+            rotulo: 'Regra do braço',
+            texto: '1 casa = 1 semitom · 2 casas = 1 tom · 12 casas = 1 oitava',
+          },
+          {
+            tipo: 'lista',
+            itens: [
+              'Casa 12 da corda Mi = Mi, uma oitava acima da corda solta',
+              'A partir da casa 12 o desenho de notas se repete igual ao começo',
+              'As marcações do braço (3, 5, 7, 9 e 12) existem para você achar a casa sem contar',
+            ],
+          },
+        ],
+      },
+      {
+        titulo: 'Notas naturais na corda Mi e na corda Lá',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Essas duas cordas concentram a maioria das fundamentais que um baixista toca. Decorar só elas já resolve boa parte do repertório.',
+          },
+          {
+            tipo: 'tabela',
+            cabecalho: ['Casa', 'Corda Mi (E)', 'Corda Lá (A)'],
+            linhas: [
+              ['solta', 'Mi', 'Lá'],
+              ['1', 'Fá', 'Lá♯ / Si♭'],
+              ['2', 'Fá♯ / Sol♭', 'Si'],
+              ['3', 'Sol', 'Dó'],
+              ['5', 'Lá', 'Ré'],
+              ['7', 'Si', 'Mi'],
+              ['8', 'Dó', 'Fá'],
+              ['10', 'Ré', 'Sol'],
+              ['12', 'Mi', 'Lá'],
+            ],
+          },
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Note os dois lugares onde a distância é de uma casa só: Mi→Fá e Si→Dó. São os mesmos semitons naturais da teoria, agora visíveis no braço.',
+          },
+        ],
+      },
+      {
+        titulo: 'As formas que valem em qualquer tom',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Como a afinação é regular, os intervalos viram desenhos fixos. Aprenda estes três e você toca em qualquer tonalidade só mudando de casa.',
+          },
+          {
+            tipo: 'tabela',
+            cabecalho: ['Intervalo', 'Onde está', 'A partir de Dó (corda Lá, casa 3)'],
+            linhas: [
+              ['4ª justa', 'Mesma casa, corda seguinte', 'Fá — corda Ré, casa 3'],
+              ['5ª justa', 'Corda seguinte, 2 casas à frente', 'Sol — corda Ré, casa 5'],
+              ['Oitava', 'Duas cordas adiante, 2 casas à frente', 'Dó — corda Sol, casa 5'],
+            ],
+          },
+          {
+            tipo: 'destaque',
+            titulo: 'O desenho da fundamental',
+            texto:
+              'Fundamental, quinta e oitava formam uma figura compacta que cabe sob a mão sem sair da posição. É a base de quase toda linha de baixo de rock, pop e sertanejo.',
+          },
+        ],
+      },
+      {
+        titulo: 'Posição de mão e economia de movimento',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Chamamos de posição a região de quatro casas que a mão alcança sem se deslocar — um dedo por casa. Tocar bem é escolher a posição que evita o maior número de saltos.',
+          },
+          {
+            tipo: 'lista',
+            itens: [
+              'Um dedo por casa: indicador, médio, anular e mínimo cobrem quatro casas seguidas',
+              'Prefira mudar de corda a mudar de posição — o salto entre cordas custa menos que o deslize pelo braço',
+              'Nas casas 1 a 5 o espaçamento é maior; nas casas altas, menor. A mesma frase exige esforços diferentes conforme a região',
+              'Ao ensaiar uma linha, marque antes onde a mão troca de posição, em vez de descobrir isso no meio da música',
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'linhas-de-baixo',
+    numero: 18,
+    titulo: 'Construção de linhas de baixo',
+    resumo: 'Da fundamental ao walking: como transformar uma cifra em linha que sustenta a banda.',
+    secoes: [
+      {
+        titulo: 'O que o baixo faz',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'A linha de baixo tem duas funções ao mesmo tempo: dizer qual é a nota grave de cada acorde e trancar o ritmo junto com a bateria. Qualquer nota que atrapalhe uma dessas duas coisas está sobrando.',
+          },
+          {
+            tipo: 'lista',
+            itens: [
+              'Função harmônica — o baixo declara a fundamental e, com ela, define o estado do acorde',
+              'Função rítmica — o baixo escolhe onde a harmonia bate, casando com o bumbo',
+            ],
+          },
+          {
+            tipo: 'destaque',
+            titulo: 'A linha serve a música',
+            texto:
+              'Uma linha boa é a que ninguém percebe até você tirá-la. Frase demais no baixo rouba espaço do vocal e da harmonia — o brilho aqui vem do encaixe, não da quantidade de notas.',
+          },
+        ],
+      },
+      {
+        titulo: 'Os quatro níveis de construção',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Toda linha, por mais elaborada, é uma dessas camadas ou uma mistura delas. Suba um degrau de cada vez sobre a mesma progressão.',
+          },
+          {
+            tipo: 'tabela',
+            cabecalho: ['Nível', 'O que tocar', 'Sobre C – Am – F – G'],
+            linhas: [
+              ['1. Fundamental', 'A raiz na cabeça do compasso', 'Dó – Lá – Fá – Sol'],
+              ['2. Fund. + 5ª', 'Raiz e quinta alternando', 'Dó-Sol / Lá-Mi / Fá-Dó / Sol-Ré'],
+              ['3. Arpejo', 'As notas do próprio acorde', 'Dó-Mi-Sol / Lá-Dó-Mi / Fá-Lá-Dó / Sol-Si-Ré'],
+              ['4. Passagem', 'Arpejo mais notas de ligação', 'Arpejo + escala e cromatismo entre acordes'],
+            ],
+          },
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Não pule para o nível 4 antes de a mão direita estar firme no nível 1. Um baixista que toca só a fundamental no tempo certo é mais útil que um que toca escalas fora do tempo.',
+          },
+        ],
+      },
+      {
+        titulo: 'Notas de passagem e aproximação cromática',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Nota de passagem é a que preenche o caminho entre duas notas importantes. A mais eficaz é a aproximação cromática: chegar na fundamental do próximo acorde por um semitom.',
+          },
+          {
+            tipo: 'lista',
+            itens: [
+              'Aproximação por baixo — um semitom abaixo do alvo: para chegar em Fá, toque Mi antes',
+              'Aproximação por cima — um semitom acima do alvo: para chegar em Fá, toque Fá♯ antes',
+              'Aproximação diatônica — chega pela nota vizinha da escala, mais suave que a cromática',
+              'Aproximação por dominante — vem da 5ª justa acima do alvo, imitando a resolução V–I',
+            ],
+          },
+          {
+            tipo: 'destaque',
+            titulo: 'Onde a nota de passagem entra',
+            texto:
+              'No último tempo do compasso, imediatamente antes da mudança de acorde. Ali ela empurra; em qualquer outro lugar costuma soar como erro.',
+          },
+        ],
+      },
+      {
+        titulo: 'Walking bass',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Walking é a linha em semínimas contínuas — quatro notas por compasso, sem parar — típica do jazz, do blues e do choro. A regra que a organiza é simples.',
+          },
+          {
+            tipo: 'formula',
+            rotulo: 'A regra do walking',
+            texto: 'Tempo 1 = fundamental do acorde · Tempo 4 = aproximação do próximo acorde',
+          },
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Com os tempos 1 e 4 definidos, sobram os tempos 2 e 3 para preencher com notas do acorde ou da escala. Toda a arte do walking mora nesse preenchimento.',
+          },
+          {
+            tipo: 'tabela',
+            cabecalho: ['Compasso', 'Acorde', 'Linha possível'],
+            linhas: [
+              ['1', 'Dm7', 'Ré – Fá – Lá – Si (aproxima Sol por cima)'],
+              ['2', 'G7', 'Sol – Si – Ré – Mi (aproxima Fá por cima)'],
+              ['3', 'C7M', 'Dó – Mi – Sol – Lá'],
+            ],
+          },
+        ],
+      },
+      {
+        titulo: 'Groove: repetição, espaço e encaixe',
+        blocos: [
+          {
+            tipo: 'paragrafo',
+            texto:
+              'Nas músicas de levada, a linha não é uma frase nova a cada compasso: é um desenho curto que se repete e vira identidade. O ouvinte precisa reconhecê-lo.',
+          },
+          {
+            tipo: 'lista',
+            itens: [
+              'Escolha um desenho de um ou dois compassos e repita-o com convicção',
+              'Case o ataque das notas graves com o bumbo; onde a caixa bate, o baixo geralmente respira',
+              'Silêncio é parte do groove — a pausa dá o balanço que a nota a mais tira',
+              'Guarde a variação para a virada, no fim de cada quatro ou oito compassos',
+            ],
+          },
+          {
+            tipo: 'destaque',
+            titulo: 'Erros mais comuns',
+            texto:
+              'Encher todos os espaços com notas; mudar de desenho a cada compasso; tocar arpejos rápidos sobre uma música que pedia fundamental; e acelerar na virada. Todos vêm de tratar o baixo como instrumento solista.',
           },
         ],
       },

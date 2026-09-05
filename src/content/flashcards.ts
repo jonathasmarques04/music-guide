@@ -96,8 +96,9 @@ export const FLASHCARDS: Record<string, Flashcard[]> = {
   'ciclo-das-quintas': [
     { frente: 'Ciclo das quintas — sentido horário', verso: 'C → G → D → A → E → B → F♯ → C♯. Cada passo acrescenta um sustenido.' },
     { frente: 'Ciclo das quintas — sentido anti-horário', verso: 'C → F → B♭ → E♭ → A♭ → D♭ → G♭. Cada passo acrescenta um bemol.' },
-    { frente: 'Quantos sustenidos tem Ré maior?', verso: '2 (Fá♯ e Dó♯) — dois passos no sentido horário.' },
     { frente: 'Quantos bemóis tem Mi♭ maior?', verso: '3 (Si♭, Mi♭ e Lá♭) — três passos no sentido anti-horário.' },
+    { frente: 'Sentido anti-horário do ciclo', verso: 'Avança por 4ª justa (ou desce uma 5ª) e acumula bemóis: C → F → B♭ → E♭ → A♭.' },
+    { frente: 'Quantos sustenidos tem Ré maior?', verso: '2 (Fá♯ e Dó♯) — dois passos no sentido horário.' },
     { frente: 'Para que serve o ciclo das quintas?', verso: 'Descobrir armaduras, achar relativas, montar progressões em quintas e planejar modulações.' },
   ],
 
@@ -106,6 +107,11 @@ export const FLASHCARDS: Record<string, Flashcard[]> = {
     { frente: 'O que é transposição?', verso: 'Levar a música inteira para outra altura, preservando a estrutura intervalar e as funções.' },
     { frente: 'Quando se usa transposição?', verso: 'Para adaptar a música à voz de quem canta ou a outro instrumento.' },
     { frente: 'Recursos comuns para modular', verso: 'Acordes pivôs, movimento cromático e dominantes secundários.' },
+    { frente: 'O que é um acorde pivô?', verso: 'Um acorde que existe nos dois campos harmônicos e serve de ponte entre eles. Am é vi de Dó e ii de Sol.' },
+    { frente: 'Os quatro caminhos da modulação', verso: 'Acorde pivô, dominante secundário, cromática e direta — do mais costurado ao mais abrupto.' },
+    { frente: 'Como transpor sem errar', verso: 'Converta a progressão em graus (I – vi – IV – V), troque de tom e volte para cifras.' },
+    { frente: 'I – vi – IV – V em Mi maior', verso: 'E – C♯m – A – B.' },
+    { frente: 'Quando a modulação se confirma?', verso: 'Quando a nova tônica passa a soar como repouso. Antes disso, foi só um acorde de fora.' },
   ],
 
   'modos-gregos': [
@@ -126,6 +132,68 @@ export const FLASHCARDS: Record<string, Flashcard[]> = {
     { frente: 'Exemplo clássico em Dó maior', verso: 'C – A♭ – F – G. O A♭ (♭VI) vem do paralelo menor.' },
     { frente: 'Como aplicar o empréstimo modal?', verso: 'Pontualmente, voltando depois ao campo harmônico original. O efeito vem do contraste.' },
     { frente: 'Acordes mais emprestados numa música em Dó maior', verso: 'A♭, E♭ e B♭ — todos vindos de Dó menor.' },
+    { frente: 'De onde vem o Fm numa música em Dó maior?', verso: 'É o iv menor, emprestado de Dó menor — um dos empréstimos mais usados na música popular.' },
+    { frente: 'Empréstimo modal é modulação?', verso: 'Não. A tônica continua a mesma; só o acorde vem de um modo paralelo.' },
+  ],
+
+  extensoes: [
+    { frente: 'A pilha de terças completa', verso: '1 – 3 – 5 – 7 – 9 – 11 – 13. A 15ª seria a fundamental de novo, então o ciclo fecha na 13ª.' },
+    { frente: '9ª, 11ª e 13ª equivalem a quais graus?', verso: '2º, 4º e 6º — só que uma oitava acima, entrando por cima da sétima.' },
+    { frente: 'Por que a 11ª justa não cabe em acorde maior?', verso: 'Ela fica um semitom acima da terça maior (Fá contra Mi, em Dó) e turva o acorde. Usa-se a ♯11 no lugar.' },
+    { frente: 'Onde a 11ª justa cabe bem?', verso: 'Em acordes menores (Dm11) e em sus4 — nos dois casos a terça maior não está lá para brigar.' },
+    { frente: '"C9" na cifra popular brasileira', verso: 'Dó–Ré–Mi–Sol, sem sétima (o mesmo que Cadd9). No jazz, "C9" pressupõe a 7ª menor.' },
+    { frente: 'sus2 x add9', verso: 'No sus2 a 2ª substitui a terça (não é maior nem menor). No add9 a terça continua no acorde.' },
+    { frente: 'Qual extensão é a mais confortável?', verso: 'A 13ª — não briga com nenhuma nota do acorde. Habitat natural: o dominante.' },
+    { frente: 'Que notas podem sair de um acorde grande?', verso: 'A quinta justa, as extensões e — se o baixo estiver tocando — a fundamental.' },
+    { frente: 'O par que nunca sai do acorde', verso: 'Terça e sétima: uma diz maior ou menor, a outra diz a função.' },
+  ],
+
+  inversoes: [
+    { frente: 'Estado fundamental', verso: 'A fundamental é a nota mais grave do acorde.' },
+    { frente: '1ª e 2ª inversão', verso: '1ª: terça no baixo (C/E). 2ª: quinta no baixo (C/G).' },
+    { frente: 'Quantos estados tem uma tétrade?', verso: 'Quatro — fundamental mais três inversões, a última com a sétima no baixo.' },
+    { frente: 'Como se lê a cifra C/E?', verso: 'Acorde de Dó maior com Mi no baixo.' },
+    { frente: 'C/D é inversão?', verso: 'Não. Ré não pertence ao acorde de Dó maior — é um baixo estranho, uma sobreposição.' },
+    { frente: 'Quem define a inversão numa banda?', verso: 'O baixo. A nota mais grave que soa é a que o ouvido lê como baixo do acorde.' },
+    { frente: 'A descida clássica com inversões', verso: 'C – C/B – Am – Am/G – F – F/E – Dm – G7. O baixo desce por graus conjuntos.' },
+    { frente: 'O que é baixo pedal?', verso: 'Uma nota grave que se mantém fixa enquanto a harmonia muda por cima — normalmente tônica ou dominante.' },
+    { frente: 'Qual inversão soa mais instável?', verso: 'A 2ª (quinta no baixo). Pede continuação, por isso raramente encerra uma frase.' },
+  ],
+
+  'leitura-ritmica': [
+    { frente: 'Valor das figuras em 4/4', verso: 'Semibreve 4 · mínima 2 · semínima 1 · colcheia ½ · semicolcheia ¼.' },
+    { frente: 'Ponto de aumento', verso: 'Acrescenta metade do valor da figura. Semínima pontuada = 1,5 tempo.' },
+    { frente: 'Ligadura de valor', verso: 'Une duas figuras de mesma altura e soma as durações — a segunda não é tocada de novo.' },
+    { frente: 'Ligadura de valor x de expressão', verso: 'De valor: mesma altura, soma tempo. De expressão: notas diferentes, pede som conectado.' },
+    { frente: 'Contagem de colcheias', verso: '1 e 2 e 3 e 4 e — o número no tempo, o "e" no contratempo.' },
+    { frente: 'Contagem de semicolcheias', verso: '1 e ê a 2 e ê a 3 e ê a 4 e ê a.' },
+    { frente: 'Síncope x contratempo', verso: 'Síncope: começa no fraco e atravessa o forte soando. Contratempo: o tempo forte fica em silêncio.' },
+    { frente: 'Compasso simples x composto', verso: 'Simples: cada tempo divide em 2. Composto: cada tempo divide em 3 (número de cima múltiplo de 3).' },
+    { frente: 'Como sentir 6/8', verso: 'Dois tempos com três subdivisões: "1 e a 2 e a" — não seis batidas soltas.' },
+    { frente: 'O que é uma tercina?', verso: 'Quiáltera de três notas ocupando o espaço de duas, escrita com um "3" em cima.' },
+  ],
+
+  'braco-do-baixo': [
+    { frente: 'Afinação padrão do baixo de 4 cordas', verso: 'Mi–Lá–Ré–Sol (E–A–D–G), da mais grave para a mais aguda.' },
+    { frente: 'Intervalo entre cordas vizinhas', verso: '4ª justa — cinco semitons. Por isso todo desenho de dedos vale no braço inteiro.' },
+    { frente: 'Quanto vale uma casa?', verso: 'Um semitom. Duas casas = 1 tom; doze casas = 1 oitava.' },
+    { frente: 'Forma da oitava no braço', verso: 'Duas cordas adiante, 2 casas à frente.' },
+    { frente: 'Forma da 5ª justa', verso: 'Corda seguinte, 2 casas à frente. (Mesma casa na corda seguinte dá a 4ª justa.)' },
+    { frente: 'Corda Lá, casa 3', verso: 'Dó. É uma das fundamentais mais usadas do braço.' },
+    { frente: 'Corda Mi, casa 3', verso: 'Sol.' },
+    { frente: 'Baixo de 5 cordas', verso: 'B–E–A–D–G: acrescenta um Si grave abaixo do Mi, mantendo a 4ª justa entre cordas.' },
+    { frente: 'O que é uma "posição"?', verso: 'A região de quatro casas que a mão alcança sem se deslocar — um dedo por casa.' },
+  ],
+
+  'linhas-de-baixo': [
+    { frente: 'As duas funções do baixo', verso: 'Declarar a fundamental do acorde e trancar o ritmo junto com a bateria.' },
+    { frente: 'Os quatro níveis de construção', verso: '1) fundamental · 2) fundamental + quinta · 3) arpejo · 4) arpejo com notas de passagem.' },
+    { frente: 'Regra do walking bass', verso: 'Tempo 1 = fundamental do acorde. Tempo 4 = aproximação do próximo acorde.' },
+    { frente: 'Aproximação cromática', verso: 'Chegar na fundamental seguinte por um semitom, acima ou abaixo dela.' },
+    { frente: 'Onde entra a nota de passagem?', verso: 'No último tempo do compasso, imediatamente antes da troca de acorde.' },
+    { frente: 'Tipos de aproximação', verso: 'Cromática (semitom), diatônica (vizinha da escala) e por dominante (5ª justa acima do alvo).' },
+    { frente: 'O que faz um groove funcionar?', verso: 'Um desenho curto repetido, encaixado no bumbo, com silêncio como parte da linha.' },
+    { frente: 'Erros comuns na linha de baixo', verso: 'Encher todos os espaços, trocar de desenho a cada compasso e acelerar na virada.' },
   ],
 };
 
