@@ -201,6 +201,12 @@ export const Rules = {
  *
  * Todo consumidor destes tokens precisa checar `useReducedMotion()` e cair
  * para a troca instantânea — movimento é reforço, nunca o único sinal.
+ *
+ * A exceção, única e deliberada: o preenchimento da `BarraProgresso`. Ali o
+ * movimento não reforça um dado, ele É o dado — a largura do retângulo é o
+ * valor, e percorrer o trilho é o que diz de quanto para quanto se foi. Some
+ * o percurso e some a informação, então essa transição roda sempre. Vale só
+ * para a largura da barra; `toque`, `escalaToque` e `giro` seguem a regra.
  */
 export const Motion = {
   /** Reação ao toque: rígida e quase sem oscilação, para parecer instantânea. */

@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
+  ReduceMotion,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -37,15 +37,33 @@ export function BarraProgresso({
 
   /*
    * A barra corre até o valor novo. Quem lê o número (o leitor de tela, pelo
-   * `accessibilityValue` abaixo) recebe o destino de imediato — a animação é
+   * `accessibilityValue` abaixo) recebe o destino de imediato — o percurso é
    * só para os olhos, e nunca atrasa a informação.
+   *
+   * Ela parte do trilho vazio também na primeira pintura: abrir a aula no
+   * passo 1 desenha a corrida de 0 até 1/6, em vez de a barra já nascer
+   * preenchida. Sem isso o movimento só existia ao trocar de passo, e quem
+   * entrava na tela nunca via de onde o progresso veio.
+   *
+   * Esta é a ÚNICA exceção à regra de `Motion` em `theme.ts`: aqui não se
+   * checa `useReducedMotion()`. O que se move é a própria grandeza que a
+   * barra existe para mostrar — a largura *é* o valor, e vê-la percorrer o
+   * trilho é ler de quanto para quanto o progresso foi. Não é decoração
+   * sobreposta a um dado, como o giro do flashcard ou o recuo do toque, que
+   * continuam obedecendo à preferência. É transição de estado, curta (520ms),
+   * num retângulo fino, sem deslocamento de página nem escala — fora do que
+   * dispara desconforto vestibular.
+   *
+   * `ReduceMotion.Never` é o que de fato destrava: além do hook, o Reanimated
+   * consulta a preferência do sistema por dentro de `withTiming` e corta a
+   * curva para um salto. Sem este campo, tirar o `useReducedMotion()` daqui
+   * não muda nada — a barra continua pulando de um valor ao outro.
    */
-  const reduzirMovimento = useReducedMotion();
-  const preenchido = useSharedValue(fracao);
+  const preenchido = useSharedValue(0);
 
   useEffect(() => {
-    preenchido.value = reduzirMovimento ? fracao : withTiming(fracao, Motion.valor);
-  }, [fracao, reduzirMovimento, preenchido]);
+    preenchido.value = withTiming(fracao, { ...Motion.valor, reduceMotion: ReduceMotion.Never });
+  }, [fracao, preenchido]);
 
   const preenchimentoStyle = useAnimatedStyle(() => ({
     width: `${preenchido.value * 100}%`,
