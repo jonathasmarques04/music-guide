@@ -4,10 +4,14 @@ import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Campo } from '@/components/ui/campo';
+import { Faixa } from '@/components/ui/faixa';
 import { Nota } from '@/components/ui/nota';
 import { Regua } from '@/components/ui/regua';
 import { Tela } from '@/components/ui/tela';
+import { flashcardsPorModulo } from '@/content/flashcards';
+import { INSTRUMENTOS } from '@/content/instrumentos';
 import { MODULOS } from '@/content/modulos';
+import { PERCENTUAL_MINIMO } from '@/content/tipos';
 import { Radius, Rules, Spacing } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth';
 import { useTheme } from '@/hooks/use-theme';
@@ -50,6 +54,35 @@ const TEXTOS: Record<Exclude<Modo, 'boasVindas'>, TextosDoModo> = {
 const VITRINE = [1, 5, 12]
   .map((numero) => MODULOS.find((modulo) => modulo.numero === numero))
   .filter((modulo): modulo is (typeof MODULOS)[number] => !!modulo);
+
+/** Contado do conteúdo, para a vitrine nunca prometer um número que mudou. */
+const TOTAL_DE_CARDS = MODULOS.reduce(
+  (soma, modulo) => soma + flashcardsPorModulo(modulo.id).length,
+  0,
+);
+
+/**
+ * O ciclo de um módulo, que é o produto inteiro em três passos.
+ *
+ * Estava dito numa frase só ("aula em passos, avaliação e baralho de revisão"),
+ * onde o leitor passa batido. Separado em três, cada passo tem espaço para
+ * dizer o que de fato acontece — e o mínimo de {@link PERCENTUAL_MINIMO}% sai
+ * da mesma constante que a avaliação usa para aprovar.
+ */
+const CICLO = [
+  {
+    titulo: 'Aula em passos',
+    detalhe: 'O módulo vem fatiado em seções curtas, com tabela e exemplo em cada uma.',
+  },
+  {
+    titulo: 'Avaliação',
+    detalhe: `Questões de múltipla escolha ao fim do módulo. ${PERCENTUAL_MINIMO}% libera o próximo.`,
+  },
+  {
+    titulo: 'Baralho de revisão',
+    detalhe: 'Repetição espaçada: errar traz o card de volta em minutos, acertar empurra para dias.',
+  },
+] as const;
 
 export function LoginScreen() {
   const {
@@ -316,7 +349,30 @@ function BoasVindas({
         aula em passos, avaliação e baralho de revisão.
       </ThemedText>
 
-      <View style={[styles.vitrine, { borderColor: theme.divider }]}>
+      {/*
+        Os três números que respondem "quanto conteúdo tem aqui?" antes de
+        pedir e-mail. São contados do conteúdo real, nunca escritos à mão: uma
+        promessa de 18 módulos que virasse 17 seria mentira em letra grande.
+      */}
+      <Faixa
+        peso="forte"
+        itens={[
+          { rotulo: 'Módulos', valor: `${MODULOS.length}`, destaque: true },
+          { rotulo: 'Cards', valor: `${TOTAL_DE_CARDS}` },
+          { rotulo: 'Instrumentos', valor: `${INSTRUMENTOS.length}` },
+        ]}
+      />
+
+      {/*
+        Rótulo e lista num bloco próprio, com folga menor que a da coluna: o
+        versalete precisa grudar no que ele nomeia. Com o mesmo respiro dos
+        vizinhos, ele flutuaria entre a faixa de cima e a vitrine de baixo sem
+        pertencer a nenhuma das duas.
+      */}
+      <View style={styles.secao}>
+        <ThemedText type="label">Alguns módulos</ThemedText>
+
+        <View style={[styles.vitrine, { borderColor: theme.divider }]}>
         {VITRINE.map((modulo, i) => (
           <View
             key={modulo.id}
@@ -333,6 +389,40 @@ function BoasVindas({
               <ThemedText type="rowTitle">{modulo.titulo}</ThemedText>
               <ThemedText type="small" numberOfLines={2}>
                 {modulo.resumo}
+              </ThemedText>
+            </View>
+          </View>
+          ))}
+        </View>
+      </View>
+
+      {/*
+        O bloco de tinta: o mesmo recurso do placar de progresso e do cartão do
+        flashcard. Aqui ele carrega o ciclo que o aluno vai repetir 18 vezes —
+        e é o peso visual que faltava entre a vitrine e os botões, no lugar do
+        vão que o `marginTop: 'auto'` das ações abria numa tela alta.
+      */}
+      <View style={[styles.ciclo, { backgroundColor: theme.inverse }]}>
+        <ThemedText type="kicker" style={{ color: theme.inverseMuted }}>
+          Como funciona
+        </ThemedText>
+
+        {CICLO.map((passo, i) => (
+          <View
+            key={passo.titulo}
+            style={[
+              styles.cicloPasso,
+              i > 0 && { borderTopWidth: Rules.hair, borderTopColor: theme.inverseMuted },
+            ]}>
+            <ThemedText type="numero" style={[styles.cicloNumero, { color: theme.inverseMuted }]}>
+              {doisDigitos(i + 1)}
+            </ThemedText>
+            <View style={styles.cicloTexto}>
+              <ThemedText type="rowTitle" style={{ color: theme.inverseOn }}>
+                {passo.titulo}
+              </ThemedText>
+              <ThemedText type="small" style={{ color: theme.inverseMuted }}>
+                {passo.detalhe}
               </ThemedText>
             </View>
           </View>
@@ -442,6 +532,17 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.two + Spacing.half,
     paddingHorizontal: Spacing.two + Spacing.one,
   },
+  secao: { gap: Spacing.two },
+  ciclo: { padding: Spacing.three + Spacing.one, gap: Spacing.two + Spacing.one },
+  cicloPasso: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.three,
+    paddingTop: Spacing.two + Spacing.one,
+  },
+  /* Largura fixa para os três numerais alinharem a coluna de texto ao lado. */
+  cicloNumero: { width: 32, fontSize: 18, lineHeight: 22 },
+  cicloTexto: { flex: 1, gap: Spacing.half },
   acoes: { marginTop: 'auto', paddingTop: Spacing.three, gap: Spacing.two },
   rodape: { marginTop: 'auto', paddingTop: Spacing.three, gap: Spacing.one },
 });
