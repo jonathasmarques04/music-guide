@@ -10,11 +10,13 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
+import { EscolherInstrumentoScreen } from '@/components/escolher-instrumento-screen';
 import { LoginScreen } from '@/components/login-screen';
 import { RedefinirSenhaScreen } from '@/components/redefinir-senha-screen';
 import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
 import { AuthProvider, useAuth } from '@/contexts/auth';
+import { InstrumentoProvider, useInstrumento } from '@/contexts/instrumento';
 import { ProgressoProvider } from '@/contexts/progresso';
 import { RevisaoProvider } from '@/contexts/revisao';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -58,13 +60,15 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={temaNavegacao}>
       <AuthProvider>
-        <ProgressoProvider>
-          <RevisaoProvider>
-            <StatusBar style={esquema === 'dark' ? 'light' : 'dark'} />
-            <AnimatedSplashOverlay />
-            <AuthGate fundo={cores.background} />
-          </RevisaoProvider>
-        </ProgressoProvider>
+        <InstrumentoProvider>
+          <ProgressoProvider>
+            <RevisaoProvider>
+              <StatusBar style={esquema === 'dark' ? 'light' : 'dark'} />
+              <AnimatedSplashOverlay />
+              <AuthGate fundo={cores.background} />
+            </RevisaoProvider>
+          </ProgressoProvider>
+        </InstrumentoProvider>
       </AuthProvider>
     </ThemeProvider>
   );
@@ -90,6 +94,23 @@ function AuthGate({ fundo }: { fundo: string }) {
 
   if (!isAuthenticated) {
     return <LoginScreen />;
+  }
+
+  return <InstrumentoGate fundo={fundo} />;
+}
+
+/**
+ * Entre a entrada e a trilha: quem nunca respondeu o que toca responde aqui.
+ *
+ * É um portão e não uma rota pelo mesmo motivo do login — enquanto a pergunta
+ * está de pé, não existe navegação por baixo dela para onde escapar. Quem já
+ * escolheu, ou já disse "depois", passa direto e nunca mais vê esta tela.
+ */
+function InstrumentoGate({ fundo }: { fundo: string }) {
+  const { precisaEscolher } = useInstrumento();
+
+  if (precisaEscolher) {
+    return <EscolherInstrumentoScreen />;
   }
 
   return (

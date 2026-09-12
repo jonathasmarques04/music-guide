@@ -12,6 +12,7 @@ import { Tela } from '@/components/ui/tela';
 import { MODULOS } from '@/content/modulos';
 import { Radius, Rules, Spacing } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth';
+import { useInstrumento } from '@/contexts/instrumento';
 import { useProgresso } from '@/contexts/progresso';
 import { useRevisao } from '@/contexts/revisao';
 import { useTheme } from '@/hooks/use-theme';
@@ -23,6 +24,7 @@ export default function DashboardScreen() {
   const { session } = useAuth();
   const { concluidos, totalAulas, statusDe, notaDe, erroSincronizacao } = useProgresso();
   const { resumoDoModulo } = useRevisao();
+  const { instrumento } = useInstrumento();
 
   const nome = session?.nome?.trim() || 'estudante';
   const restantes = Math.max(0, totalAulas - concluidos);
@@ -44,7 +46,14 @@ export default function DashboardScreen() {
     <Tela>
       <View style={styles.topo}>
         <View style={styles.saudacao}>
-          <ThemedText type="kicker">Área do aluno</ThemedText>
+          {/*
+            O versalete diz o instrumento de quem escolheu. É a única marca da
+            escolha no painel — e some por inteiro para quem adiou, em vez de
+            virar um "sem instrumento" cobrando uma resposta já recusada.
+          */}
+          <ThemedText type="kicker">
+            {instrumento ? `Área do aluno · ${instrumento.nome}` : 'Área do aluno'}
+          </ThemedText>
           <ThemedText type="title" accessibilityRole="header">
             Olá, {nome}
           </ThemedText>

@@ -237,3 +237,29 @@ create policy "avatares: aluno apaga o próprio"
     bucket_id = 'avatares'
     and (storage.foldername(name))[1] = (select auth.uid())::text
   );
+
+-- =============================================================================
+-- 4. instrumento do aluno — o que ele escolheu estudar
+--
+-- Duas colunas porque são três estados, e não dois:
+--   instrumento = null, adiado = false  -> nunca foi perguntado: pergunte
+--   instrumento = null, adiado = true   -> respondeu "depois": NÃO pergunte
+--   instrumento = '<id>'                -> escolheu
+--
+-- Sem a segunda coluna, quem pula a escolha levaria a mesma tela na cara a
+-- cada abertura do app — o "depois" precisa ser uma resposta guardada, não a
+-- ausência de resposta.
+-- =============================================================================
+
+alter table public.perfis add column if not exists instrumento text;
+alter table public.perfis add column if not exists instrumento_adiado boolean not null default false;
+
+-- Sem `check` na lista de instrumentos, pela mesma razão que `modulo_id` não
+-- tem: o conteúdo é do app, e prender o banco a ele faria de cada instrumento
+-- novo uma migração. A fonte da verdade é INSTRUMENTOS em
+-- src/content/instrumentos.ts; um id desconhecido aqui é lido como "nenhum".
+comment on column public.perfis.instrumento is
+  'Id do instrumento escolhido. Espelha INSTRUMENTOS em src/content/instrumentos.ts. Nulo = sem escolha.';
+
+comment on column public.perfis.instrumento_adiado is
+  'true quando o aluno respondeu "decidir depois". Impede que a tela de escolha volte a cada abertura.';

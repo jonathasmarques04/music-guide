@@ -75,6 +75,8 @@ const verificacoes = [
   ['2', 'progresso_modulos.aproveitamento', coluna('progresso_modulos', 'aproveitamento')],
   ['3', 'perfis.avatar_url', coluna('perfis', 'avatar_url')],
   ['3', 'bucket avatares', bucket('avatares')],
+  ['4', 'perfis.instrumento', coluna('perfis', 'instrumento')],
+  ['4', 'perfis.instrumento_adiado', coluna('perfis', 'instrumento_adiado')],
 ];
 
 (async () => {

@@ -1,5 +1,6 @@
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -17,6 +18,7 @@ import { flashcardsPorModulo } from '@/content/flashcards';
 import { MODULOS } from '@/content/modulos';
 import { Radius, Rules, Spacing } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth';
+import { useInstrumento } from '@/contexts/instrumento';
 import { useProgresso } from '@/contexts/progresso';
 import { useHover } from '@/hooks/use-hover';
 import { useTheme } from '@/hooks/use-theme';
@@ -39,6 +41,8 @@ export default function PerfilScreen() {
     signOut,
   } = useAuth();
   const { concluidos, totalAulas, statusDe, reiniciar } = useProgresso();
+  const router = useRouter();
+  const { instrumento } = useInstrumento();
 
   const nomeAtual = session?.nome?.trim() || 'estudante';
 
@@ -170,6 +174,12 @@ export default function PerfilScreen() {
 
         <LinhaLista rotulo="Idioma" valor="Português" />
         <LinhaLista rotulo="Nomes das notas" valor="Dó Ré Mi (com cifra)" />
+        <LinhaLista
+          rotulo="Meu instrumento"
+          valor={instrumento?.nome ?? 'Não escolhido'}
+          onPress={() => router.push('/instrumentos')}
+          accessibilityHint="Abre a página de instrumentos, onde dá para trocar"
+        />
         <LinhaLista rotulo="Progresso" valor={`${concluidos} de ${totalAulas} aprovados`} />
         <View style={styles.braco}>
           <BracoCompacto casas={casas} />

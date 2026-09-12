@@ -15,6 +15,8 @@ export type Database = {
           nome: string;
           email: string | null;
           avatar_url: string | null;
+          instrumento: string | null;
+          instrumento_adiado: boolean;
           criado_em: string;
           atualizado_em: string;
         };
@@ -23,6 +25,8 @@ export type Database = {
           nome?: string;
           email?: string | null;
           avatar_url?: string | null;
+          instrumento?: string | null;
+          instrumento_adiado?: boolean;
           criado_em?: string;
           atualizado_em?: string;
         };
@@ -31,6 +35,8 @@ export type Database = {
           nome?: string;
           email?: string | null;
           avatar_url?: string | null;
+          instrumento?: string | null;
+          instrumento_adiado?: boolean;
           criado_em?: string;
           atualizado_em?: string;
         };
