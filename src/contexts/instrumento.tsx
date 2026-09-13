@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 import { INSTRUMENTOS } from '@/content/instrumentos';
@@ -5,6 +6,39 @@ import type { Instrumento } from '@/content/tipos';
 import { useAuth } from '@/contexts/auth';
 import { mensagemDeErro } from '@/lib/erros-auth';
 import { supabase } from '@/lib/supabase';
+
+/** O que fica guardado no aparelho — o mesmo par que mora no banco. */
+type Resposta = { instrumento: string | null; adiado: boolean };
+
+/**
+ * Uma chave por identidade, com o visitante tendo a sua.
+ *
+ * Sem separar, a resposta de um aluno apareceria para o próximo que entrasse
+ * no mesmo aparelho — e a do visitante vazaria para a conta de verdade.
+ */
+const chaveDe = (usuarioId: string | null) => `instrumento:${usuarioId ?? 'visitante'}`;
+
+/*
+ * O armazenamento local pode simplesmente não existir (janela anônima, dados
+ * do site limpos, storage recusado). Em nenhum desses casos isso pode derrubar
+ * o app: falhar aqui só significa que a pergunta volta na próxima abertura.
+ */
+async function lerResposta(usuarioId: string | null): Promise<Resposta | null> {
+  try {
+    const bruto = await AsyncStorage.getItem(chaveDe(usuarioId));
+    return bruto ? (JSON.parse(bruto) as Resposta) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function gravarResposta(usuarioId: string | null, resposta: Resposta) {
+  try {
+    await AsyncStorage.setItem(chaveDe(usuarioId), JSON.stringify(resposta));
+  } catch {
+    // Sem storage a escolha vale a sessão; não há o que avisar ao aluno.
+  }
+}
 
 type InstrumentoValue = {
   /** O instrumento escolhido, ou null enquanto o aluno não escolheu. */
@@ -37,45 +71,62 @@ export function InstrumentoProvider({ children }: { children: ReactNode }) {
   /** null no modo visitante: a escolha vale a sessão e nunca vai ao banco. */
   const usuarioId = session?.usuarioId ?? null;
 
-  // Troca de conta (ou saída) recarrega: o instrumento é de quem está logado.
+  /*
+   * Troca de conta (ou saída) recarrega: o instrumento é de quem está logado.
+   *
+   * A ordem é aparelho primeiro, conta depois, e ela é o que faz a pergunta
+   * aparecer UMA vez só. O aparelho responde na hora e responde sempre —
+   * inclusive para o visitante, que não tem linha no banco, e inclusive
+   * enquanto a seção 4 do schema.sql não foi aplicada. A conta entra por cima
+   * porque é ela que atravessa de um celular para outro.
+   */
   useEffect(() => {
-    setEscolhido(null);
-    setAdiado(false);
-    setErroSincronizacao(null);
-
-    if (!usuarioId) {
-      // Visitante não tem o que buscar — e não pode ficar preso em "carregando".
-      setCarregando(false);
-      return;
-    }
-
     let ativo = true;
     setCarregando(true);
+    setErroSincronizacao(null);
 
-    supabase
-      .from('perfis')
-      .select('instrumento, instrumento_adiado')
-      .eq('id', usuarioId)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (!ativo) return;
+    (async () => {
+      const local = await lerResposta(usuarioId);
+      if (!ativo) return;
 
-        /*
-         * Coluna ausente derruba a consulta INTEIRA (PostgREST, 42703), e é o
-         * estado normal de quem ainda não rodou a seção 4 do schema.sql. Aqui
-         * isso vira "ninguém escolheu ainda" em vez de tela de erro: a escolha
-         * continua funcionando na sessão, só não sobrevive ao fechar o app.
-         * Quem diz o que falta é `npm run supabase`.
-         */
-        if (error) {
-          setErroSincronizacao(mensagemDeErro(error));
-        } else if (data) {
-          setEscolhido(data.instrumento ?? null);
-          setAdiado(!!data.instrumento_adiado);
-        }
+      setEscolhido(local?.instrumento ?? null);
+      setAdiado(!!local?.adiado);
 
+      if (!usuarioId) {
+        // Visitante não tem banco — o que estava no aparelho já é a resposta.
         setCarregando(false);
-      });
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('perfis')
+        .select('instrumento, instrumento_adiado')
+        .eq('id', usuarioId)
+        .maybeSingle();
+
+      if (!ativo) return;
+
+      /*
+       * Coluna ausente derruba a consulta INTEIRA (PostgREST, 42703), e é o
+       * estado normal de quem ainda não rodou a seção 4 do schema.sql. Aqui
+       * isso não apaga nada: fica valendo o que o aparelho respondeu, e a
+       * pergunta segue sem voltar. Quem diz o que falta é `npm run supabase`.
+       */
+      if (error) {
+        setErroSincronizacao(mensagemDeErro(error));
+      } else if (data?.instrumento || data?.instrumento_adiado) {
+        /*
+         * Só sobrepõe quando a conta TEM uma resposta. Uma linha recém-criada
+         * traz os dois campos nulos, e deixá-la vencer apagaria a escolha que
+         * o aluno acabou de fazer neste aparelho — trazendo de volta a tela
+         * que ele já respondeu.
+         */
+        setEscolhido(data.instrumento ?? null);
+        setAdiado(!!data.instrumento_adiado);
+      }
+
+      setCarregando(false);
+    })();
 
     return () => {
       ativo = false;
@@ -89,6 +140,10 @@ export function InstrumentoProvider({ children }: { children: ReactNode }) {
   const gravar = (instrumento: string | null, instrumentoAdiado: boolean) => {
     setEscolhido(instrumento);
     setAdiado(instrumentoAdiado);
+
+    // O aparelho recebe a resposta SEMPRE, com ou sem conta. É esta linha que
+    // garante que a pergunta não volta na próxima abertura.
+    gravarResposta(usuarioId, { instrumento, adiado: instrumentoAdiado });
 
     if (!usuarioId) return;
 
