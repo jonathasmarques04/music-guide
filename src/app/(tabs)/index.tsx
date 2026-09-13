@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { BotaoPerfil } from '@/components/botao-perfil';
 import { ThemedText } from '@/components/themed-text';
 import { BarraProgresso } from '@/components/ui/barra';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,7 @@ import { useInstrumento } from '@/contexts/instrumento';
 import { useProgresso } from '@/contexts/progresso';
 import { useRevisao } from '@/contexts/revisao';
 import { useTheme } from '@/hooks/use-theme';
-import { doisDigitos, iniciais, percentual } from '@/lib/formato';
+import { doisDigitos, percentual } from '@/lib/formato';
 
 export default function DashboardScreen() {
   const router = useRouter();
@@ -59,18 +60,7 @@ export default function DashboardScreen() {
           </ThemedText>
         </View>
 
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`Perfil de ${nome}`}
-          accessibilityHint="Abre a aba de perfil"
-          onPress={() => router.push('/perfil')}
-          style={({ pressed }) => [
-            styles.avatar,
-            { borderColor: theme.text },
-            pressed && { backgroundColor: theme.backgroundSelected },
-          ]}>
-          <ThemedText type="rowTitle">{iniciais(nome)}</ThemedText>
-        </Pressable>
+        <BotaoPerfil />
       </View>
 
       {atual ? (
@@ -179,14 +169,6 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   saudacao: { flexShrink: 1, gap: Spacing.one + Spacing.half },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderWidth: Rules.thick,
-    borderRadius: Radius,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   retomar: {
     padding: Spacing.three,
     gap: Spacing.two,

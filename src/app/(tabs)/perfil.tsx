@@ -1,10 +1,10 @@
-import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { Avatar } from '@/components/ui/avatar';
 import { BracoCompacto, type CasaBraco } from '@/components/ui/braco';
 import { Button } from '@/components/ui/button';
 import { Campo } from '@/components/ui/campo';
@@ -16,14 +16,13 @@ import { Tag } from '@/components/ui/tag';
 import { Tela } from '@/components/ui/tela';
 import { flashcardsPorModulo } from '@/content/flashcards';
 import { MODULOS } from '@/content/modulos';
-import { Radius, Rules, Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth';
 import { useInstrumento } from '@/contexts/instrumento';
 import { useProgresso } from '@/contexts/progresso';
 import { useHover } from '@/hooks/use-hover';
 import { useTheme } from '@/hooks/use-theme';
 import { MINIMO_SENHA, emailValido, faltamCaracteres } from '@/lib/credenciais';
-import { iniciais } from '@/lib/formato';
 
 const TOTAL_CARDS = MODULOS.reduce((soma, m) => soma + flashcardsPorModulo(m.id).length, 0);
 
@@ -263,22 +262,15 @@ function FotoDePerfil({
   const theme = useTheme();
   const ponteiro = useHover();
 
-  const conteudo = avatarUrl ? (
-    <Image
-      source={{ uri: avatarUrl }}
-      style={styles.foto}
-      contentFit="cover"
-      transition={200}
-      /* A foto é decorativa: o nome já está escrito ao lado, em texto. */
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-    />
-  ) : (
-    <ThemedText type="subtitle">{iniciais(nome)}</ThemedText>
-  );
+  /*
+   * O MESMO `Avatar` das outras telas, só que grande. Foto, iniciais de
+   * reserva e queda em erro de carregamento moram lá dentro — aqui fica só o
+   * que é exclusivo do Perfil: poder trocar a foto.
+   */
+  const conteudo = <Avatar nome={nome} avatarUrl={avatarUrl} tamanho="lg" />;
 
   if (!podeTrocar) {
-    return <View style={[styles.avatar, { borderColor: theme.text }]}>{conteudo}</View>;
+    return conteudo;
   }
 
   return (
@@ -290,13 +282,17 @@ function FotoDePerfil({
       onPress={onTrocar}
       {...ponteiro.props}
       style={({ pressed }) => [
-        styles.avatar,
-        { borderColor: theme.text },
-        ponteiro.hover && { borderColor: theme.accent },
+        styles.avatarAlvo,
         pressed && { backgroundColor: theme.backgroundSelected },
         ocupado && styles.avatarOcupado,
       ]}>
-      {conteudo}
+      {/* O contorno agora é do `Avatar`; o ponteiro só troca a cor dele. */}
+      <Avatar
+        nome={nome}
+        avatarUrl={avatarUrl}
+        tamanho="lg"
+        style={ponteiro.hover ? { borderColor: theme.accent } : undefined}
+      />
 
       {/*
         A faixa so aparece com ponteiro ou durante o envio: no celular ela
@@ -528,18 +524,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.two + Spacing.one,
   },
-  avatar: {
-    width: 64,
-    height: 64,
-    borderWidth: Rules.thick,
-    borderRadius: Radius,
-    alignItems: 'center',
-    justifyContent: 'center',
-    /* A foto e a faixa "trocar" ficam contidas pelo quadrado. */
-    overflow: 'hidden',
-  },
+  /*
+   * Só o alvo de toque: quem desenha o quadrado, o contorno e a foto é o
+   * `Avatar`. O `overflow` fica porque a faixa "trocar" é filha DESTE nó, não
+   * do avatar — ela precisa ser cortada pelo mesmo retângulo.
+   */
+  avatarAlvo: { alignSelf: 'flex-start', borderRadius: Radius, overflow: 'hidden' },
   avatarOcupado: { opacity: 0.6 },
-  foto: { width: '100%', height: '100%' },
   /* Faixa chapada rente ao rodapé do quadrado — o sistema não usa véu. */
   faixaFoto: {
     position: 'absolute',

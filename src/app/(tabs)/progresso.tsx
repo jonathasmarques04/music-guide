@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { BotaoPerfil } from '@/components/botao-perfil';
 import { ThemedText } from '@/components/themed-text';
 import { BarraProgresso } from '@/components/ui/barra';
 import { Button } from '@/components/ui/button';
@@ -38,10 +39,14 @@ export default function ProgressoScreen() {
   return (
     <Tela>
       <View style={styles.topo}>
-        <ThemedText type="kicker">Seu histórico</ThemedText>
-        <ThemedText type="title" accessibilityRole="header">
-          Progresso
-        </ThemedText>
+        <View style={styles.topoTextos}>
+          <ThemedText type="kicker">Seu histórico</ThemedText>
+          <ThemedText type="title" accessibilityRole="header">
+            Progresso
+          </ThemedText>
+        </View>
+
+        <BotaoPerfil />
       </View>
 
       <Regua />
@@ -156,7 +161,13 @@ export default function ProgressoScreen() {
 }
 
 const styles = StyleSheet.create({
-  topo: { gap: Spacing.one + Spacing.half },
+  topo: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
+  },
+  topoTextos: { flexShrink: 1, gap: Spacing.one + Spacing.half },
   placar: {
     padding: Spacing.four,
     gap: Spacing.two,

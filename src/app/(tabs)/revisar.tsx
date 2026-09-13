@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { BotaoPerfil } from '@/components/botao-perfil';
 import { ThemedText } from '@/components/themed-text';
 import { Faixa } from '@/components/ui/faixa';
 import { Regua } from '@/components/ui/regua';
@@ -39,10 +40,21 @@ export default function RevisarScreen() {
   return (
     <Tela semMargem espaco={0}>
       <View style={styles.topo}>
-        <ThemedText type="kicker">Repetição espaçada</ThemedText>
-        <ThemedText type="title" accessibilityRole="header">
-          Revisar
-        </ThemedText>
+        {/*
+          Só o versalete e o título dividem a linha com o retrato. A frase
+          explicativa e a faixa de números seguem em largura cheia embaixo —
+          espremê-las contra o avatar quebraria a medida da coluna de leitura.
+        */}
+        <View style={styles.cabeca}>
+          <View style={styles.cabecaTextos}>
+            <ThemedText type="kicker">Repetição espaçada</ThemedText>
+            <ThemedText type="title" accessibilityRole="header">
+              Revisar
+            </ThemedText>
+          </View>
+
+          <BotaoPerfil />
+        </View>
         <ThemedText type="small">
           Cada card volta no prazo que você deu a ele. Errar traz de volta em minutos; acertar com
           folga empurra para dias.
@@ -133,6 +145,13 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.three,
     gap: Spacing.two,
   },
+  cabeca: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
+  },
+  cabecaTextos: { flexShrink: 1, gap: Spacing.one + Spacing.half },
   linha: {
     flexDirection: 'row',
     alignItems: 'stretch',
