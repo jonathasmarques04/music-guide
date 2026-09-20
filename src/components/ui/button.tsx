@@ -30,6 +30,16 @@ export type ButtonProps = Omit<PressableProps, 'children' | 'style'> & {
    */
   bloco?: boolean;
   loading?: boolean;
+  /**
+   * A ação deu certo e não há mais nada a fazer aqui — o link saiu, o e-mail
+   * foi reenviado.
+   *
+   * Não é o mesmo que `disabled`: um botão desabilitado está apagado porque
+   * ainda falta alguma coisa, e um botão em sucesso está firme porque já
+   * acabou. Por isso o preenchimento sobe um passo da rampa em vez de perder
+   * opacidade, e o rótulo ganha ✓ — cor nunca vem sozinha (ver `theme.ts`).
+   */
+  sucesso?: boolean;
 };
 
 const TAMANHOS = {
@@ -44,6 +54,7 @@ export function Button({
   size = 'md',
   bloco = false,
   loading = false,
+  sucesso = false,
   disabled,
   accessibilityHint,
   ...rest
@@ -109,6 +120,13 @@ export function Button({
             variant === 'secondary' && { backgroundColor: theme.backgroundElement, borderColor: theme.text },
           realce && variant === 'ghost' && { backgroundColor: theme.backgroundElement },
           /*
+           * Depois do hover e antes do toque: o sucesso não pode ser lavado
+           * pelo ponteiro que ainda está em cima do botão, mas o toque continua
+           * respondendo enquanto o botão não for desabilitado.
+           */
+          sucesso && variant === 'primary' && { backgroundColor: theme.accent },
+          sucesso && variant === 'secondary' && { borderColor: theme.accent },
+          /*
            * Estado pressionado vindo da rampa do destaque — um passo além da
            * base, como manda o sistema. `accent` é o passo mais escuro no tema
            * claro e o mais claro no escuro, então o mesmo token serve aos dois.
@@ -137,7 +155,7 @@ export function Button({
             { color: rotulo, fontSize: metrica.fontSize },
             loading && styles.invisivel,
           ]}>
-          {children}
+          {sucesso ? `✓ ${children}` : children}
         </ThemedText>
       </Pressable>
     </Animated.View>

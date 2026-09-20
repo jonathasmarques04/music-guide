@@ -53,6 +53,33 @@ textarea:focus-visible {
 }
 
 /*
+ * Cursor de mão em tudo que é botão. React Native não tem o conceito de
+ * cursor, e o `Pressable` sozinho vira um `div` que o navegador trata como
+ * texto — o ponteiro vira barra em cima do rótulo e o controle parece morto.
+ */
+[role='button'],
+[role='tab'],
+[role='radio'] {
+  cursor: pointer;
+}
+
+/* O contrário também vale: dentro de um botão, nada deve parecer selecionável. */
+[role='button']:disabled,
+[aria-disabled='true'] {
+  cursor: default;
+}
+
+/*
+ * A barra de rolagem na paleta do sistema. A padrão do Chrome é um cinza-azulado
+ * que não pertence ao bone, e no tema escuro ela sai clara demais — nos dois
+ * casos vira a peça mais chamativa de uma tela que é toda grade e régua.
+ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-divider) transparent;
+}
+
+/*
  * Sem isto o `body` fica sem cor de fundo e o branco do navegador vaza nas
  * áreas que a árvore do React Native não cobre (overscroll, barra de rolagem,
  * carregamento inicial antes da hidratação).
