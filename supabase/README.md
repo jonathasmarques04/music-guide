@@ -25,10 +25,29 @@ npx expo start --clear
 npm run supabase
 ```
 
-Lê o `.env.local`, bate no projeto real e lista o que falta, por seção do
-`schema.sql`. Só leitura, só com a chave publicável. Vale rodar depois de
-mexer no schema e ao clonar o projeto numa máquina nova — foi o que pegou a
-seção 3 (avatares) faltando no banco enquanto o código já a usava.
+Lê o `.env.local` e faz consultas de leitura com a chave publicável. Recusa
+respostas anônimas contendo linhas e erros inesperados. Respostas vazias
+não provam que a RLS está correta: o banco também pode estar vazio.
+O código de saída é 1 para falha e 2 para resultado inconclusivo. Com Storage
+privado, uma sonda sem login não distingue bucket privado de bucket ausente.
+RPC, triggers e isolamento entre duas contas precisam de teste autenticado.
+
+### Correção de privacidade dos avatares (04/10/2026)
+
+Execute a seção 3 atualizada de `schema.sql` no projeto correto. Ela torna
+`avatares` privado, remove a política de leitura geral e permite leitura apenas
+da pasta do próprio aluno. O app atualizado armazena o caminho da foto e gera
+URLs assinadas de uma hora, renovadas durante o uso. Perfis com URLs públicas
+antigas são lidos usando o caminho canônico do próprio usuário.
+
+A aplicação dessa mudança no banco não foi confirmada: o endereço configurado
+não resolveu por DNS durante a auditoria. Publicar o código não aplica SQL.
+Distribua o app atualizado junto da mudança: versões antigas que dependem da
+URL pública deixam de exibir a foto depois de fechar o bucket.
+
+Após aplicar, use duas contas de teste para confirmar que cada conta só lista,
+lê, assina, altera e remove seus próprios arquivos, e que sem login não é
+possível listar ou baixar fotos. Teste também os perfis, progresso e a RPC.
 
 ---
 

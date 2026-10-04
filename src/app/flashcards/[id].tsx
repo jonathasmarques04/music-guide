@@ -27,6 +27,7 @@ import {
 import type { Flashcard } from '@/content/tipos';
 import { Motion, Radius, Rules, Spacing } from '@/constants/theme';
 import { chaveCard, useRevisao } from '@/contexts/revisao';
+import { useProgresso } from '@/contexts/progresso';
 import { useHover } from '@/hooks/use-hover';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -41,7 +42,8 @@ import { useTheme } from '@/hooks/use-theme';
 export default function FlashcardsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { filaDoModulo, registrar, estadoDe } = useRevisao();
+  const { filaDoModulo, registrar, estadoDe, erroPersistencia } = useRevisao();
+  const { statusDe } = useProgresso();
 
   const modulo = moduloPorId(id);
   const cards = flashcardsPorModulo(id);
@@ -66,6 +68,11 @@ export default function FlashcardsScreen() {
 
   const sair = () => router.dismissTo({ pathname: '/modulo/[id]', params: { id: modulo.id } });
 
+  if (statusDe(modulo.id) === 'bloqueado') {
+    return <Tela><Cabecalho voltar="a trilha" destino="/trilha" titulo="Módulo bloqueado" />
+      <ThemedText>Conclua a avaliação do módulo anterior para continuar.</ThemedText></Tela>;
+  }
+
   if (posicao >= fila.length) {
     return (
       <Tela>
@@ -82,6 +89,7 @@ export default function FlashcardsScreen() {
           ]}
         />
         <ThemedText type="default" themeColor="textSecondary">
+          {erroPersistencia ? `${erroPersistencia} ` : ''}
           Cada card guarda o próprio prazo. Os que você marcou como &ldquo;Errei&rdquo; voltam
           ainda hoje; os demais esperam o tempo que ganharam.
         </ThemedText>
@@ -118,6 +126,7 @@ export default function FlashcardsScreen() {
       />
 
       <Tela rolar={false} espaco={Spacing.two + Spacing.one}>
+        {erroPersistencia && <ThemedText accessibilityRole="alert">{erroPersistencia}</ThemedText>}
         <Cartao card={card} virado={virado} onVirar={() => setVirado(!virado)} />
 
         {virado ? (

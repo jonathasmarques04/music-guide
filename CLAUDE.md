@@ -50,7 +50,8 @@ Implicações práticas ao escrever código aqui:
 - O `supabase/schema.sql` mora no git, mas o banco mora na nuvem: as duas coisas
   saem de sincronia em silêncio. Depois de mexer no schema — ou ao pegar o
   projeto numa máquina nova — rode `npm run supabase`, que confere contra o
-  projeto real e diz qual seção falta aplicar.
+  projeto real, verifica colunas e procura respostas anônimas indevidas. Ele
+  não confirma políticas/RPC/triggers; Storage privado exige teste autenticado.
 - Ao mexer em cor, rode `npm run contraste`: ele lê os hex de `theme.ts` e
   confere todos os pares nos dois esquemas. Par novo na interface, linha nova
   na lista de `scripts/verifica-contraste.js`.
@@ -75,7 +76,8 @@ npm run android    # expo start --android
 npm run web        # expo start --web
 npx tsc --noEmit   # type-check
 npm run contraste  # confere o contraste do tema nos dois esquemas
-npm run supabase   # confere se o banco real tem o que schema.sql promete
+npm test           # regressões de segurança, persistência e conteúdo (mocks locais)
+npm run supabase   # sondas de leitura; resultado inconclusivo exige teste autenticado
 npx expo-doctor    # diagnóstico do projeto
 ```
 

@@ -297,7 +297,7 @@ export const QUIZZES: Record<string, Questao[]> = {
       alternativas: ['I', 'IV', 'V', 'VI'],
       correta: 2,
       explicacao:
-        'Só o V grau. Em Dó maior é G7 — o único que contém o trítono e por isso pede resolução.',
+        'Só o V grau forma uma tétrade do tipo X7: tríade maior com sétima menor. Em Dó maior é G7. O VII grau (Bm7♭5) também contém o trítono Si–Fá, mas é meio-diminuto.',
     },
     {
       pergunta: 'Como se constrói o campo harmônico?',

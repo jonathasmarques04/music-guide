@@ -15,7 +15,7 @@ export const MINIMO_SENHA = 6;
  * claramente não é um endereço. Quem diz se a conta existe é o Supabase.
  */
 export function emailValido(email: string) {
-  return /^\S+@\S+\.\S+$/.test(email.trim());
+  return /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/.test(email.trim());
 }
 
 /** Concordância certa no singular: "Falta 1 caractere", "Faltam 2 caracteres". */

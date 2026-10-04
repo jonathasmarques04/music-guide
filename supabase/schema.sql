@@ -197,22 +197,21 @@ $$;
 alter table public.perfis add column if not exists avatar_url text;
 
 comment on column public.perfis.avatar_url is
-  'Endereço público da foto no bucket `avatares`. Nulo = aluno sem foto.';
+  'Caminho da foto no bucket privado `avatares`. Nulo = aluno sem foto.';
 
--- Bucket público na LEITURA: um avatar não é segredo, e assim o app monta a
--- imagem com a URL direta, sem assinar cada acesso. A escrita continua fechada
--- pelas políticas abaixo.
+-- A foto só pode ser lida pelo próprio aluno. O app gera URLs temporárias.
 insert into storage.buckets (id, name, public)
-values ('avatares', 'avatares', true)
-on conflict (id) do update set public = true;
+values ('avatares', 'avatares', false)
+on conflict (id) do update set public = false;
 
 -- O caminho do arquivo é `<uuid-do-aluno>/<nome>`, e é a PRIMEIRA pasta que
 -- amarra o arquivo ao dono. Sem isso qualquer aluno autenticado sobrescreveria
 -- o avatar de qualquer outro.
 drop policy if exists "avatares: qualquer um vê" on storage.objects;
-create policy "avatares: qualquer um vê"
-  on storage.objects for select
-  using (bucket_id = 'avatares');
+drop policy if exists "avatares: aluno le o proprio" on storage.objects;
+create policy "avatares: aluno le o proprio"
+  on storage.objects for select to authenticated
+  using (bucket_id = 'avatares' and (storage.foldername(name))[1] = (select auth.uid())::text);
 
 drop policy if exists "avatares: aluno envia o próprio" on storage.objects;
 create policy "avatares: aluno envia o próprio"

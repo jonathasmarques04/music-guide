@@ -63,6 +63,12 @@ const acharInstrumento = (id: string | null) =>
 
 export function InstrumentoProvider({ children }: { children: ReactNode }) {
   const { session } = useAuth();
+  const identidade = session?.usuarioId ?? (session?.isGuest ? 'visitante' : 'sem-sessao');
+  return <InstrumentoDoAluno key={identidade}>{children}</InstrumentoDoAluno>;
+}
+
+function InstrumentoDoAluno({ children }: { children: ReactNode }) {
+  const { session } = useAuth();
   const [escolhido, setEscolhido] = useState<string | null>(null);
   const [adiado, setAdiado] = useState(false);
   const [carregando, setCarregando] = useState(true);

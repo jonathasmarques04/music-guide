@@ -1,141 +1,139 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { AppState } from 'react-native';
 import { MODULOS } from '@/content/modulos';
 import { NOTA_MINIMA } from '@/content/tipos';
 import { useAuth } from '@/contexts/auth';
+import { useEstadoLocal } from '@/hooks/use-estado-local';
 import { mensagemDeErro } from '@/lib/erros-auth';
 import { supabase } from '@/lib/supabase';
 
 export type StatusModulo = 'concluido' | 'atual' | 'bloqueado';
-
 type ProgressoValue = {
   registrarNota: (moduloId: string, aproveitamento: number) => void;
   statusDe: (moduloId: string) => StatusModulo;
-  /** Melhor aproveitamento do módulo, de 0 a 1; `undefined` se nunca avaliado. */
   notaDe: (moduloId: string) => number | undefined;
   concluidos: number;
   totalAulas: number;
   reiniciar: () => void;
-  /** Preenchido quando a gravação no servidor falhou (o app segue funcionando). */
   erroSincronizacao: string | null;
 };
-
+type Dados = { notas: Record<string, number>; pendentes: Record<string, number>; reinicioPendente: boolean };
+const VAZIO: Dados = { notas: {}, pendentes: {}, reinicioPendente: false };
 const ProgressoContext = createContext<ProgressoValue | null>(null);
-
+const notaValida = (id: string, nota: unknown): nota is number =>
+  MODULOS.some(m => m.id === id) && typeof nota === 'number' && Number.isFinite(nota) && nota >= 0 && nota <= 1;
+function validarDados(valor: unknown): Dados {
+  const dados = valor as Partial<Dados> | null;
+  const limpar = (notas: unknown): Record<string, number> =>
+    notas && typeof notas === 'object'
+      ? Object.fromEntries(Object.entries(notas).filter(([id, nota]) => notaValida(id, nota))) : {};
+  return { notas: limpar(dados?.notas), pendentes: limpar(dados?.pendentes), reinicioPendente: dados?.reinicioPendente === true };
+}
 export function ProgressoProvider({ children }: { children: ReactNode }) {
   const { session } = useAuth();
-  const [notas, setNotas] = useState<Record<string, number>>({});
-  const [erroSincronizacao, setErroSincronizacao] = useState<string | null>(null);
-
-  /** null no modo visitante: aí o progresso é só de memória, nunca vai ao banco. */
   const usuarioId = session?.usuarioId ?? null;
-
-  // Troca de conta (ou saída) recarrega tudo: o progresso é por aluno.
-  useEffect(() => {
-    if (!usuarioId) {
-      setNotas({});
-      return;
-    }
-
-    let ativo = true;
-    setErroSincronizacao(null);
-
-    supabase
-      .from('progresso_modulos')
-      .select('modulo_id, aproveitamento')
-      .eq('usuario_id', usuarioId)
-      .then(({ data, error }) => {
-        if (!ativo) return;
-
-        if (error) {
-          setErroSincronizacao(mensagemDeErro(error));
-          return;
-        }
-
-        const salvas: Record<string, number> = {};
-        for (const linha of data) {
-          salvas[linha.modulo_id] = linha.aproveitamento;
-        }
-        setNotas(salvas);
-      });
-
-    return () => {
-      ativo = false;
-    };
-  }, [usuarioId]);
-
-  /**
-   * Guarda apenas a MELHOR nota: refazer a avaliação nunca piora o progresso.
-   * A mesma regra vale no banco (função `registrar_nota` em schema.sql), então
-   * uma gravação fora de ordem também não derruba o que já foi conquistado.
-   *
-   * A tela é atualizada na hora e a ida ao servidor acontece em seguida: uma
-   * falha de rede não pode travar o fim da avaliação.
-   */
-  const registrarNota = (moduloId: string, aproveitamento: number) => {
-    const anterior = notas[moduloId] ?? 0;
-    if (aproveitamento <= anterior) return;
-
-    setNotas((atual) => ({ ...atual, [moduloId]: aproveitamento }));
-
-    if (!usuarioId) return;
-
-    supabase
-      .rpc('registrar_nota', { p_modulo_id: moduloId, p_aproveitamento: aproveitamento })
-      .then(({ error }) => {
-        setErroSincronizacao(error ? mensagemDeErro(error) : null);
-      });
-  };
-
-  const passou = (moduloId: string) => (notas[moduloId] ?? 0) >= NOTA_MINIMA;
-
-  /**
-   * Um módulo é liberado quando o anterior foi aprovado (>= 60%).
-   * O primeiro módulo está sempre liberado.
-   */
-  const statusDe = (moduloId: string): StatusModulo => {
-    const indice = MODULOS.findIndex((m) => m.id === moduloId);
-    if (indice < 0) return 'bloqueado';
-    if (passou(moduloId)) return 'concluido';
-
-    const anterior = MODULOS[indice - 1];
-    if (!anterior) return 'atual';
-    return passou(anterior.id) ? 'atual' : 'bloqueado';
-  };
-
-  const reiniciar = () => {
-    setNotas({});
-
-    if (!usuarioId) return;
-
-    supabase
-      .from('progresso_modulos')
-      .delete()
-      .eq('usuario_id', usuarioId)
-      .then(({ error }) => {
-        setErroSincronizacao(error ? mensagemDeErro(error) : null);
-      });
-  };
-
-  const value: ProgressoValue = {
-    registrarNota,
-    statusDe,
-    notaDe: (moduloId) => notas[moduloId],
-    concluidos: MODULOS.filter((m) => passou(m.id)).length,
-    totalAulas: MODULOS.length,
-    reiniciar,
-    erroSincronizacao,
-  };
-
-  return <ProgressoContext.Provider value={value}>{children}</ProgressoContext.Provider>;
+  const identidade = usuarioId ?? (session?.isGuest ? 'visitante' : 'sem-sessao');
+  return <ProgressoDoAluno key={identidade} identidade={identidade} usuarioId={usuarioId}>{children}</ProgressoDoAluno>;
 }
-
+function ProgressoDoAluno({ children, identidade, usuarioId }: {
+  children: ReactNode; identidade: string; usuarioId: string | null;
+}) {
+  const { estado, atual, atualizar, pronto, erro, ativo } = useEstadoLocal(`progresso:v1:${identidade}`, VAZIO, validarDados);
+  const [erroRemoto, setErroRemoto] = useState<string | null>(null);
+  const sincronizando = useRef(false);
+  const versao = useRef(0);
+  // Fixa o token da conta de origem para uma RPC de A nunca gravar como B.
+  const sincronizar = async (carregar = false) => {
+    if (!usuarioId || !pronto || !ativo.current || sincronizando.current) return;
+    sincronizando.current = true;
+    const inicio = versao.current;
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      if (!ativo.current || data.session?.user.id !== usuarioId) return;
+      const token = `Bearer ${data.session.access_token}`;
+      if (atual.current.reinicioPendente) {
+        const resposta = await supabase.from('progresso_modulos').delete()
+          .eq('usuario_id', usuarioId).setHeader('Authorization', token);
+        if (resposta.error) throw resposta.error;
+        if (!ativo.current || inicio !== versao.current) return;
+        atualizar(d => ({ ...d, reinicioPendente: false }));
+      } else if (carregar) {
+        const resposta = await supabase.from('progresso_modulos').select('modulo_id, aproveitamento')
+          .eq('usuario_id', usuarioId).setHeader('Authorization', token);
+        if (resposta.error) throw resposta.error;
+        if (!ativo.current || inicio !== versao.current) return;
+        atualizar(d => {
+          const notas = { ...d.notas };
+          for (const linha of resposta.data ?? []) {
+            if (notaValida(linha.modulo_id, linha.aproveitamento)) {
+              notas[linha.modulo_id] = Math.max(notas[linha.modulo_id] ?? 0, linha.aproveitamento);
+            }
+          }
+          return { ...d, notas };
+        });
+      }
+      for (const [id, nota] of Object.entries(atual.current.pendentes)) {
+        if (!ativo.current || inicio !== versao.current) return;
+        const resposta = await supabase.rpc('registrar_nota', { p_modulo_id: id, p_aproveitamento: nota })
+          .setHeader('Authorization', token);
+        if (resposta.error) throw resposta.error;
+        if (!ativo.current || inicio !== versao.current) return;
+        atualizar(d => {
+          const pendentes = { ...d.pendentes };
+          if (pendentes[id] === nota) delete pendentes[id];
+          return { ...d, pendentes };
+        });
+      }
+      if (ativo.current) setErroRemoto(null);
+    } catch (falha) {
+      if (ativo.current) setErroRemoto(mensagemDeErro(falha));
+    } finally {
+      sincronizando.current = false;
+      if (ativo.current && inicio !== versao.current) void sincronizar();
+    }
+  };
+  useEffect(() => {
+    if (!pronto) return;
+    void sincronizar(true);
+    const intervalo = setInterval(() => { void sincronizar(); }, 30_000);
+    const listener = AppState.addEventListener('change', estado => {
+      if (estado === 'active') void sincronizar(true);
+    });
+    return () => { clearInterval(intervalo); listener.remove(); };
+    // A identidade remonta o provider; as operações leem os dados mais recentes pela ref.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pronto, usuarioId]);
+  const passou = (id: string) => (estado.notas[id] ?? 0) >= NOTA_MINIMA;
+  const statusDe = (id: string): StatusModulo => {
+    const indice = MODULOS.findIndex(m => m.id === id);
+    if (indice < 0) return 'bloqueado';
+    if (passou(id)) return 'concluido';
+    return indice === 0 || passou(MODULOS[indice - 1].id) ? 'atual' : 'bloqueado';
+  };
+  const registrarNota = (id: string, nota: number) => {
+    if (!notaValida(id, nota) || statusDe(id) === 'bloqueado') return;
+    atualizar(d => {
+      const melhor = Math.max(d.notas[id] ?? 0, nota);
+      return { ...d, notas: { ...d.notas, [id]: melhor },
+        pendentes: usuarioId ? { ...d.pendentes, [id]: melhor } : d.pendentes };
+    });
+    void sincronizar();
+  };
+  const reiniciar = () => {
+    versao.current++;
+    atualizar(() => ({ notas: {}, pendentes: {}, reinicioPendente: !!usuarioId }));
+    void sincronizar();
+  };
+  const value: ProgressoValue = {
+    registrarNota, statusDe, notaDe: id => estado.notas[id],
+    concluidos: MODULOS.filter(m => passou(m.id)).length, totalAulas: MODULOS.length,
+    reiniciar, erroSincronizacao: erro ?? erroRemoto,
+  };
+  return <ProgressoContext.Provider value={value}>{pronto ? children : null}</ProgressoContext.Provider>;
+}
 export function useProgresso() {
-  const context = useContext(ProgressoContext);
-
-  if (!context) {
-    throw new Error('useProgresso precisa estar dentro de <ProgressoProvider>.');
-  }
-
-  return context;
+  const contexto = useContext(ProgressoContext);
+  if (!contexto) throw new Error('useProgresso precisa estar dentro de <ProgressoProvider>.');
+  return contexto;
 }

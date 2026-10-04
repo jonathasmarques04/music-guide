@@ -11,8 +11,8 @@ import { AuthError, isAuthError } from '@supabase/supabase-js';
 const PORCODIGO: Record<string, string> = {
   invalid_credentials: 'E-mail ou senha incorretos.',
   email_not_confirmed: 'Confirme seu e-mail antes de entrar. Veja a mensagem que enviamos para você.',
-  user_already_exists: 'Já existe uma conta com esse e-mail. Tente entrar.',
-  email_exists: 'Já existe uma conta com esse e-mail. Tente entrar.',
+  user_already_exists: 'Não foi possível concluir esta solicitação. Confira os dados ou tente entrar.',
+  email_exists: 'Não foi possível concluir esta solicitação. Confira os dados ou tente entrar.',
   weak_password: 'Senha fraca. Use pelo menos 6 caracteres.',
   same_password: 'A nova senha precisa ser diferente da atual.',
   validation_failed: 'Confira os dados: algum campo está em formato inválido.',
@@ -21,7 +21,7 @@ const PORCODIGO: Record<string, string> = {
   over_email_send_rate_limit: 'Já pedimos e-mails demais em pouco tempo. Espere um pouco antes de tentar de novo.',
   over_request_rate_limit: 'Muitas tentativas seguidas. Espere alguns minutos e tente de novo.',
   signup_disabled: 'O cadastro de novas contas está desativado no momento.',
-  user_not_found: 'Não encontramos uma conta com esse e-mail.',
+  user_not_found: 'Não foi possível concluir esta solicitação. Confira os dados ou tente entrar.',
   session_expired: 'Sua sessão expirou. Entre de novo.',
   flow_state_expired: 'Esse link expirou. Peça um novo e-mail de recuperação.',
   flow_state_not_found: 'Esse link não vale mais. Peça um novo e-mail de recuperação.',
@@ -53,11 +53,11 @@ export function mensagemDeErro(erro: unknown): string {
       return 'Não foi possível falar com o servidor. Verifique sua conexão e tente de novo.';
     }
 
-    return erro.message;
+    return 'Não foi possível concluir a operação. Tente de novo.';
   }
 
   if (erro instanceof Error) {
-    return erro.message;
+    return 'Não foi possível concluir a operação. Verifique sua conexão e tente de novo.';
   }
 
   return 'Algo deu errado. Tente de novo.';

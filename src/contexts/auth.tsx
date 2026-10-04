@@ -1,7 +1,7 @@
 import type { Session as SessaoSupabase } from '@supabase/supabase-js';
 import * as Linking from 'expo-linking';
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 
 import { codigoDoErro, mensagemDeErro } from '@/lib/erros-auth';
 import { supabase } from '@/lib/supabase';
@@ -113,6 +113,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [carregando, setCarregando] = useState(true);
   const [recuperandoSenha, setRecuperandoSenha] = useState(false);
   const [erroLink, setErroLink] = useState<string | null>(null);
+  const [perfilId, setPerfilId] = useState<string | null>(null);
+  const usuarioAtual = useRef<string | null>(null);
 
   const usuario = sessaoSupabase?.user ?? null;
   const usuarioId = usuario?.id ?? null;
@@ -131,6 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     supabase.auth.getSession().then(({ data }) => {
       if (!ativo) return;
+      usuarioAtual.current = data.session?.user.id ?? null;
       setSessaoSupabase(data.session);
       setCarregando(false);
     });
@@ -140,6 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } = supabase.auth.onAuthStateChange((evento, sessao) => {
       // Não chame outros métodos do supabase daqui dentro: o SDK serializa as
       // chamadas de auth e isso trava. O que precisa de rede vai nos efeitos.
+      usuarioAtual.current = sessao?.user.id ?? null;
       setSessaoSupabase(sessao);
       setCarregando(false);
 
@@ -156,6 +160,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // --- Carrega o perfil (nome de exibição e foto) da conta ------------------
   useEffect(() => {
+    setNome('');
+    setAvatarUrl(null);
+    setPerfilId(usuarioId);
     if (!usuarioId) {
       setNome('');
       setAvatarUrl(null);
@@ -181,8 +188,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!ativo) return;
 
       if (!comFoto.error) {
-        if (comFoto.data?.nome) setNome(comFoto.data.nome);
-        setAvatarUrl(comFoto.data?.avatar_url ?? null);
+        setNome(comFoto.data?.nome ?? '');
+        if (comFoto.data?.avatar_url) {
+          // O perfil guarda apenas o caminho. URLs públicas antigas também
+          // são lidas pelo caminho canônico do dono, nunca por uma URL externa.
+          const { data, error } = await supabase.storage.from('avatares')
+            .createSignedUrl(`${usuarioId}/avatar.jpg`, 3600);
+          if (!ativo) return;
+          setAvatarUrl(error ? null : data.signedUrl);
+        } else {
+          setAvatarUrl(null);
+        }
         return;
       }
 
@@ -198,10 +214,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAvatarUrl(null);
     };
 
-    carregar();
+    const atualizar = () => { void carregar().catch(() => {
+      if (ativo) setAvatarUrl(null);
+    }); };
+    atualizar();
+    const intervalo = setInterval(atualizar, 45 * 60 * 1000);
+    const listener = AppState.addEventListener('change', estado => {
+      if (estado === 'active') atualizar();
+    });
 
     return () => {
       ativo = false;
+      clearInterval(intervalo);
+      listener.remove();
     };
   }, [usuarioId]);
 
@@ -221,7 +246,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // O Supabase devolve a falha na própria URL quando o link não vale mais.
     const recusa = queryParams?.error_description ?? queryParams?.error;
     if (typeof recusa === 'string') {
-      setErroLink(`Esse link não funcionou (${recusa}). Peça um novo e-mail.`);
+      setErroLink('Esse link não funcionou. Peça um novo e-mail.');
       return;
     }
 
@@ -250,7 +275,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       hash.get('error');
 
     if (recusa) {
-      setErroLink(`Esse link não funcionou (${recusa}). Peça um novo e-mail.`);
+      setErroLink('Esse link não funcionou. Peça um novo e-mail.');
     }
   }, []);
 
@@ -260,8 +285,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ? {
           usuarioId: usuario.id,
           email: usuario.email ?? null,
-          nome: nome || usuario.email?.split('@')[0] || 'estudante',
-          avatarUrl,
+          nome: (perfilId === usuario.id ? nome : '') || usuario.email?.split('@')[0] || 'estudante',
+          avatarUrl: perfilId === usuario.id ? avatarUrl : null,
           isGuest: false,
         }
       : null;
@@ -300,6 +325,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (error) {
+        if (['user_already_exists', 'email_exists'].includes(codigoDoErro(error) ?? '')) {
+          return { erro: null, precisaConfirmarEmail: true };
+        }
         return { ...resultado(error), precisaConfirmarEmail: false };
       }
 
@@ -307,8 +335,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // (evita descobrir quem tem conta): devolve um usuário sem identities.
       if (data.user && data.user.identities?.length === 0) {
         return {
-          erro: 'Já existe uma conta com esse e-mail. Tente entrar.',
-          precisaConfirmarEmail: false,
+          erro: null,
+          precisaConfirmarEmail: true,
         };
       }
 
@@ -352,7 +380,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return resultado(error);
       }
 
-      setNome(limpo);
+      if (usuarioAtual.current === usuarioId) setNome(limpo);
       return resultado(null);
     },
 
@@ -362,9 +390,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
      * pasta é o que amarra o arquivo ao dono na política de RLS, e o nome fixo
      * evita deixar avatares órfãos a cada troca.
      *
-     * O endereço guardado leva `?v=<timestamp>` porque o bucket é público e
-     * servido por CDN — sem isso a foto nova continuaria mostrando a antiga até
-     * o cache expirar.
+     * O bucket é privado. Guardamos o caminho e assinamos a leitura por 1 hora.
      */
     atualizarAvatar: async (uri) => {
       if (!usuarioId) return exigeConta('trocar a foto');
@@ -386,31 +412,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return resultado(falha);
       }
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from('avatares').getPublicUrl(caminho);
-
-      const endereco = `${publicUrl}?v=${Date.now()}`;
-
       const { error } = await supabase
         .from('perfis')
-        .update({ avatar_url: endereco })
+        .update({ avatar_url: caminho })
         .eq('id', usuarioId);
 
       if (error) {
         return resultado(error);
       }
 
-      setAvatarUrl(endereco);
+      const { data, error: falhaAssinatura } = await supabase.storage.from('avatares')
+        .createSignedUrl(caminho, 3600);
+      if (falhaAssinatura) return resultado(falhaAssinatura);
+      if (usuarioAtual.current === usuarioId) setAvatarUrl(data.signedUrl);
       return resultado(null);
     },
 
     removerAvatar: async () => {
       if (!usuarioId) return exigeConta('mexer na foto');
 
-      // Some da tela mesmo que o arquivo resista: o que o app mostra é o
-      // `avatar_url`, então limpar a coluna é o que de fato remove a foto.
-      await supabase.storage.from('avatares').remove([`${usuarioId}/avatar.jpg`]);
+      try {
+        const { error: falhaRemocao } = await supabase.storage.from('avatares')
+          .remove([`${usuarioId}/avatar.jpg`]);
+        if (falhaRemocao) return resultado(falhaRemocao);
+      } catch (falha) {
+        return resultado(falha);
+      }
 
       const { error } = await supabase
         .from('perfis')
@@ -421,7 +448,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return resultado(error);
       }
 
-      setAvatarUrl(null);
+      if (usuarioAtual.current === usuarioId) setAvatarUrl(null);
       return resultado(null);
     },
 

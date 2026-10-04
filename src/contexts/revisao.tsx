@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
+import { useAuth } from '@/contexts/auth';
+import { useEstadoLocal } from '@/hooks/use-estado-local';
 
 import { flashcardsPorModulo } from '@/content/flashcards';
 import {
@@ -31,6 +33,7 @@ export type ResumoModulo = {
 };
 
 type RevisaoValue = {
+  erroPersistencia: string | null;
   estadoDe: (chave: string) => EstadoCard | undefined;
   registrar: (chave: string, avaliacao: Avaliacao) => void;
   /** Índices dos cards do módulo que devem ser estudados agora. */
@@ -39,9 +42,28 @@ type RevisaoValue = {
 };
 
 const RevisaoContext = createContext<RevisaoValue | null>(null);
+const VAZIO: Record<string, EstadoCard> = {};
+
+function validarEstados(valor: unknown): Record<string, EstadoCard> {
+  if (!valor || typeof valor !== 'object') return {};
+  return Object.fromEntries(Object.entries(valor).filter(([, card]) =>
+    card && Number.isInteger(card.repeticoes) && card.repeticoes >= 0 &&
+    Number.isFinite(card.facilidade) && card.facilidade >= 1.3 && card.facilidade <= 2.8 &&
+    Number.isFinite(card.intervaloMinutos) && card.intervaloMinutos >= 0 &&
+    Number.isFinite(card.proximaRevisao) && card.proximaRevisao >= 0
+  ));
+}
 
 export function RevisaoProvider({ children }: { children: ReactNode }) {
-  const [estados, setEstados] = useState<Record<string, EstadoCard>>({});
+  const { session } = useAuth();
+  const identidade = session?.usuarioId ?? (session?.isGuest ? 'visitante' : 'sem-sessao');
+  return <RevisaoDoAluno key={identidade} identidade={identidade}>{children}</RevisaoDoAluno>;
+}
+
+function RevisaoDoAluno({ children, identidade }: { children: ReactNode; identidade: string }) {
+  const { estado: estados, atualizar: setEstados, pronto, erro } = useEstadoLocal(
+    `revisao:v1:${identidade}`, VAZIO, validarEstados
+  );
 
   const estadoDe = (chave: string) => estados[chave];
 
@@ -102,13 +124,14 @@ export function RevisaoProvider({ children }: { children: ReactNode }) {
   };
 
   const value: RevisaoValue = {
+    erroPersistencia: erro,
     estadoDe,
     registrar,
     filaDoModulo,
     resumoDoModulo,
   };
 
-  return <RevisaoContext.Provider value={value}>{children}</RevisaoContext.Provider>;
+  return <RevisaoContext.Provider value={value}>{pronto ? children : null}</RevisaoContext.Provider>;
 }
 
 export function useRevisao() {

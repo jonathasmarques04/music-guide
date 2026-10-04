@@ -225,7 +225,7 @@ export function LoginScreen() {
         setErro(falha);
       } else if (precisaConfirmarEmail) {
         // Sem sessão: a conta existe, mas só abre depois do clique no e-mail.
-        setAviso(`Conta criada. Confirme o e-mail que enviamos para ${email.trim()} e volte para entrar.`);
+        setAviso(`Se o cadastro puder ser concluído, você receberá uma confirmação em ${email.trim()}. Se já tem conta, tente entrar ou recuperar a senha.`);
         setEmailPendente(email.trim());
         setEsperaReenvio(SEGUNDOS_ENTRE_REENVIOS);
         setSenha('');
@@ -539,7 +539,7 @@ function BoasVindas({
                   Entrar como visitante
                 </Button>
                 <ThemedText type="small" themeColor="textMuted">
-                  Atalho de desenvolvimento. Seu progresso não será salvo.
+                  Atalho de desenvolvimento. Progresso neste aparelho, sem sincronização com uma conta.
                 </ThemedText>
               </>
             )}

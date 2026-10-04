@@ -55,7 +55,7 @@ export const FLASHCARDS: Record<string, Flashcard[]> = {
     { frente: 'Campo harmônico de Dó maior (tétrades)', verso: 'C7M – Dm7 – Em7 – F7M – G7 – Am7 – Bm7♭5' },
     { frente: 'Campo harmônico menor natural', verso: 'i – ii° – III – iv – v – VI – VII. Em Lá menor: Am – B° – C – Dm – Em – F – G.' },
     { frente: 'Como se constrói um campo harmônico?', verso: 'Empilhando terças diatônicas sobre cada grau, usando só as notas da escala.' },
-    { frente: 'Qual grau é o único dominante no campo maior?', verso: 'O V (G7 em Dó maior) — é o único que contém o trítono.' },
+    { frente: 'Qual grau é o único dominante no campo maior?', verso: 'O V é o único do tipo X7 (G7 em Dó maior): tríade maior com sétima menor. O VII grau (Bm7♭5) também contém o trítono, mas é meio-diminuto.' },
   ],
 
   'funcoes-harmonicas': [

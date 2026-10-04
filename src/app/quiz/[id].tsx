@@ -22,7 +22,7 @@ import { doisDigitos, percentual } from '@/lib/formato';
 export default function QuizScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { registrarNota, notaDe } = useProgresso();
+  const { registrarNota, notaDe, statusDe } = useProgresso();
 
   const modulo = moduloPorId(id);
   const questoes = quizPorModulo(id);
@@ -42,6 +42,11 @@ export default function QuizScreen() {
         <ThemedText type="small">Este módulo ainda não tem avaliação.</ThemedText>
       </Tela>
     );
+  }
+
+  if (statusDe(modulo.id) === 'bloqueado') {
+    return <Tela><Cabecalho voltar="a trilha" destino="/trilha" titulo="Módulo bloqueado" />
+      <ThemedText>Conclua a avaliação do módulo anterior para continuar.</ThemedText></Tela>;
   }
 
   const questao = questoes[indice];

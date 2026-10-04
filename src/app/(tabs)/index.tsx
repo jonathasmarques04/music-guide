@@ -154,7 +154,7 @@ export default function DashboardScreen() {
         <Nota
           tom="erro"
           rotulo="Sincronização"
-          texto={`${erroSincronizacao} Seu progresso continua salvo neste aparelho.`}
+          texto={`${erroSincronizacao} Vamos tentar sincronizar novamente enquanto o app estiver aberto.`}
         />
       )}
     </Tela>
